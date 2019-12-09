@@ -1,0 +1,86 @@
+---
+
+- name: Add CRI-O repositories for version 1.11 1.13 1.14 and 1.15
+  yum_repository:
+    name: "{{ item.name }}"
+    file: crio
+    description: "{{ item.description }}"
+    baseurl: "{{ item.baseurl }}" 
+    enabled: yes
+    gpgcheck: no
+  with_items:
+    - name: CRI-O-115
+      description: CRI-O-115
+      baseurl: https://cbs.centos.org/repos/paas7-crio-115-candidate/x86_64/os/
+    - name: CRI-O-111
+      description: CRI-O-111
+      baseurl: https://cbs.centos.org/repos/paas7-crio-311-candidate/x86_64/os/
+    - name: CRI-O-114
+      description: CRI-O-114
+      baseurl: https://cbs.centos.org/repos/paas7-crio-114-candidate/x86_64/os/
+    - name: CRI-O-113
+      description: CRI-O-113
+      baseurl: https://cbs.centos.org/repos/paas7-crio-113-candidate/x86_64/os
+
+
+- name: Install rpm containernetworking-plugins v0.7.5
+  yum:
+    name: https://cbs.centos.org/kojifiles/packages/containernetworking-plugins/0.7.5/1.el7/x86_64/containernetworking-plugins-0.7.5-1.el7.x86_64.rpm
+    state: present
+
+- name: Update cache
+  yum:
+    update_cache: yes
+
+- name: Add Centos-extras-x86_64 repository used for containernetworking-plugins
+  yum_repository:
+    name: Centos-extras-x86_64
+    file: Centos-extras-x86_64
+    state: absent
+
+- name: install CRI-O
+  yum:
+    name:
+      - cri-o
+      - cri-tools
+    disable_excludes: all
+    update_cache: yes
+    disable_gpg_check: yes
+    state: present
+
+- name: Create network directory for CRI-O network
+  file:
+    path: "/etc/crio/net.d"
+    state: directory
+
+- name: Push CRI-O configuration including CNI config for CRI-O
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: 10-crio-bridge.conf.j2
+      dest: /etc/crio/net.d/10-crio-bridge.conf
+    - src: 99-loopback.conf.j2
+      dest: /etc/crio/net.d/99-loopback.conf
+    - src: crio.conf.j2
+      dest: /etc/crio/crio.conf
+
+- name: systemd daemon reload
+  systemd:
+    daemon_reload: yes
+
+- name: start cri-o
+  systemd:
+    name: crio
+    state: restarted
+    enabled: yes
+
+    #will be managed by handlers
+    #- name: Start services
+    #  systemd:
+    #    enabled: yes
+    #    state: started
+    #    name: "{{ item }}"
+    #  with_items:
+    #    - crio
+    

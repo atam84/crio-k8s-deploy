@@ -1,0 +1,31 @@
+---
+
+- name: Cleanup
+  run_once: true
+  delegate_to: localhost
+  file:
+    path: "./files/{{ item }}"
+    state: absent
+  with_items:
+    - initiator-server.txt
+
+
+- name: Find Initiator server
+  run_once: true
+  delegate_to: localhost
+  lineinfile:
+    path: "./files/initiator-server.txt"
+    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    create: yes
+    state: present
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- set_fact:
+    initiator: "{{ lookup('file', './files/initiator-server.txt') }}"
+
+
+- debug:
+    msg: "Initiator server selected: {{ initiator }}"
+  run_once: true
+

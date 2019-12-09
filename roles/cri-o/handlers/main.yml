@@ -1,0 +1,8 @@
+---
+
+- name: start cri-o
+  systemd:
+    name: crio
+    state: started
+    enabled: yes
+

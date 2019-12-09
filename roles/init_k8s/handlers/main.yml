@@ -1,0 +1,6 @@
+---
+
+- name: Enable kubelet.service
+  systemd:
+    enabled: yes
+    name: kubelet.service

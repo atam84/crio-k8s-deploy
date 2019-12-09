@@ -1,0 +1,19 @@
+---
+
+- name: Drain node(s), ignore daemonsets and delete local data
+  shell: |
+    kubectl drain {{ item }} --ignore-daemonsets --delete-local-data {{ options|default('') }}
+  delegate_to: "{{ initiator }}"
+  run_once: true
+  with_items:
+    - "{{ target }}"
+
+
+- name: Remove node(s)
+  shell:
+    kubectl delete node {{ item }} {{ options|default('') }}
+  delegate_to: "{{ initiator }}"
+  run_once: true
+  with_items:
+    - "{{ target }}"
+

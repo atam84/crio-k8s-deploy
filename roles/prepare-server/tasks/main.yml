@@ -1,0 +1,146 @@
+---
+
+- name: Stop and disable firewalld.service
+  systemd:
+    state: stopped
+    name: firewalld.service
+
+- name: Install epel-release repos
+  yum:
+    name: epel-release
+    disable_excludes: all
+    update_cache: yes
+    state: present
+
+#   - name: upgrade all packages
+#      yum:
+#        name: '*'
+#        state: latest
+
+- name: Install some packages :)
+  yum:
+    name:
+    - python3
+    - vim
+    - jq
+    - wget
+    - curl
+    disable_excludes: all
+    update_cache: yes
+    state: present
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+    
+- name: Disable swap
+  shell: |
+    swapoff -a
+  when: ansible_swaptotal_mb > 0
+    
+    
+- name: Disable SELinux
+  selinux:
+    state: disabled
+    #setenforce 0
+    
+- name: Disable SELinux permanantly
+  lineinfile:
+    path: /etc/selinux/config
+    regex: '^SELINUX='
+    line: SELINUX=permissive
+    #sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+    
+- name: Load modules br_netfilter and overlay
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - overlay
+
+- name: Load modules when system reboot
+  lineinfile:
+    path: /etc/modprobe.d/k8s_modules.conf
+    create: yes
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - br_netfilter
+    - overlay
+
+- name: Enable bridging and forwarding
+  sysctl:
+    name: "{{ item }}"
+    value: '1'
+    sysctl_set: yes
+    state: present
+    sysctl_file: /etc/sysctl.d/99-kubernetes-cri.conf
+    reload: yes
+  with_items:
+    - net.bridge.bridge-nf-call-iptables
+    - net.ipv4.ip_forward
+    - net.bridge.bridge-nf-call-ip6tables
+
+- name: Disable IPv6
+  sysctl:
+    name: "{{ item }}"
+    value: '1'
+    sysctl_set: yes
+    state: present
+    sysctl_file: /etc/sysctl.d/98-disable-ip6.conf
+    reload: yes
+  with_items:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+
+
+- name: Switch SSHD to IPv$ only
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - line: "AddressFamily inet"
+      regexp: ".*AddressFamily"
+    - line: "ListenAddress 0.0.0.0"
+      regexp: '.*ListenAddress'
+
+- name: Initialize hosts file creation
+  run_once: true
+  delegate_to: localhost
+  lineinfile:
+    path: "./templates/hosts_file_generated"
+    line: "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4"
+    create: yes
+    state: present
+    regexp: "^127.0.0.1"
+
+- name: Create /etc/hosts file based on inventory information
+  run_once: True
+  delegate_to: localhost
+  lineinfile:
+    path: "./templates/hosts_file_generated"
+    line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ hostvars[item]['host_name'] }} {{ hostvars[item]['host_name'] }}.{{ hostvars[item]['domain_name'] }}"
+    create: yes
+    state: present
+    regexp: "^{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+  with_items: "{{ groups['all'] }}"
+
+
+- name: Insert hosts information in /etc/hosts of targets machine
+  blockinfile:
+    block: "{{ lookup('file', './templates/hosts_file_generated') }}"
+    dest: "/etc/hosts"
+    backup: no
+    state: present
+
+- name: Set server hostname
+  hostname:
+    name: "{{ hostvars[inventory_hostname]['host_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }}"
+

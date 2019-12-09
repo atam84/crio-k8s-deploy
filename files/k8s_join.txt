@@ -1,0 +1,4 @@
+endpoint: 192.168.41.130:6443
+token: 3rm3eh.quf5ucsjelzhf0xq
+ca_cert: 06d5409ba93c19775c1956b0607aa0dfb20538a832c2c329b4ddd67fd08ae958
+cert_key: f92815fe182a863af9bc52c19f5e8cad1fcfde20e1e4c5f63d7ea38c50d113cc

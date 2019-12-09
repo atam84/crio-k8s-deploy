@@ -1,0 +1,112 @@
+---
+
+- name: Add kubernetes repository
+  yum_repository:
+    name: Kubernetes
+    file: kubernetes
+    description: Kubernetes YUM repo
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+
+- name: Install kubeadm kubelet and kubectl
+  yum:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    disable_excludes: all
+    update_cache: yes
+    state: present
+    
+
+- name: Create kubelet configuration file 20-cri.conf file
+  blockinfile:
+    path: /usr/lib/systemd/system/kubelet.service.d/20-cri.conf
+    marker: ""
+    create: yes
+    block: |
+      [Service]
+       Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
+
+
+- name: systemd daemon reload
+  systemd:
+    daemon_reload: yes
+
+- name: Enable kubelet.service
+  systemd:
+    name: kubelet.service
+    enabled: yes
+    state: stopped
+
+
+- name: Cleanup
+  run_once: true
+  delegate_to: localhost
+  file:
+    path: "./files/{{ item }}"
+    state: absent
+  with_items:
+    - initiator-server.txt
+    - k8s_join.txt
+    - kubeadm_init.txt
+
+
+- name: Find Initiator server
+  run_once: true
+  delegate_to: localhost
+  lineinfile:
+    path: "./files/initiator-server.txt"
+    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    create: yes
+    state: present
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- set_fact:
+    initiator: "{{ lookup('file', './files/initiator-server.txt') }}"
+
+
+- debug:
+    msg: "Initiator server selected: {{ initiator }}"
+
+
+- name: Initialize the cluster
+  shell: |
+    kubeadm init --cri-socket="unix:///var/run/crio/crio.sock" \
+                  --kubernetes-version $(kubeadm version -o short) \
+                  --apiserver-advertise-address={{ initiator }} \
+                  --upload-certs \
+                  --control-plane-endpoint {{ initiator }} \
+                  --pod-network-cidr 10.244.0.0/16
+  register: init_cluster
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- name: Save kubeadm init output
+  run_once: true
+  delegate_to: localhost
+  blockinfile:
+    path: "./files/kubeadm_init.txt"
+    marker: ""
+    create: yes
+    block: |
+      {{ init_cluster.stdout }}
+
+- name: Set control
+  shell: |
+    mkdir -p $HOME/.kube
+    cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+

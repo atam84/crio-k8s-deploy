@@ -1,0 +1,26 @@
+---
+
+#kubeadm join <endpoint-ip-or-dns>:<port> \
+#--token <valid-bootstrap-token> \
+#--discovery-token-ca-cert-hash <ca-cert-sha256-hash>
+#
+- include_vars:
+    file: './files/k8s_join.txt'
+    name: params
+
+- debug:
+    var: params
+  run_once: true
+
+- name: Add worker(s) node(s)
+  shell: |
+    kubeadm join {{ params.endpoint }} --token {{ params.token }} --discovery-token-ca-cert-hash sha256:{{ params.ca_cert }}
+  register: w_add
+  ignore_errors: true
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "false"
+    - inventory_hostname in groups.workers
+
+- debug:
+    var: w_add.stdout
+

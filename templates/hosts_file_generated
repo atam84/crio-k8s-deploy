@@ -1,0 +1,5 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+192.168.41.130 node-master01 node-master01.cluster.local
+192.168.41.131 node-master02 node-master02.cluster.local
+192.168.41.129 node-worker01 node-worker01.cluster.local
+192.168.41.132 node-worker02 node-worker02.cluster.local

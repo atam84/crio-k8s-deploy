@@ -1,0 +1,10 @@
+---
+
+- name: Destroy k8s cluster
+  shell: |
+    kubeadm reset --force
+  register: reset_k8s
+
+- debug:
+    var: reset_k8s
+

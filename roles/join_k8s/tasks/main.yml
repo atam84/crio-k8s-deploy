@@ -1,0 +1,90 @@
+---
+
+- name: Cleanup
+  run_once: true
+  delegate_to: localhost
+  file:
+    path: "./files/{{ item }}"
+    state: absent
+  with_items:
+    - k8s_join.txt
+    - initiator-server.txt
+
+- name: Find Initiator server
+  run_once: true
+  delegate_to: localhost
+  lineinfile:
+    path: "./files/initiator-server.txt"
+    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    create: yes
+    state: present
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- set_fact:
+    initiator: "{{ lookup('file', './files/initiator-server.txt') }}"
+
+
+- debug:
+    msg: "Initiator server selected: {{ initiator }}"
+  run_once: true
+
+- name: Get endpoint control plane
+  shell: |
+    kubectl -n kube-system get cm kubeadm-config -o yaml | grep controlPlaneEndpoint | awk '{print $2}'
+  register: endpoint
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- name: Create token
+  shell: |
+    kubeadm token create
+  register: token
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- name: Get CA
+  shell: |
+    openssl x509 -in /etc/kubernetes/pki/ca.crt -pubkey -noout | openssl pkey -pubin -outform DER | openssl dgst -sha256 | awk '{print $2}'
+  register: ca_cert
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- name: kubeadm init phase upload-certs
+  shell: |
+    kubeadm init phase upload-certs --upload-certs | awk 'END{print}'
+  register: cert_key
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+
+- name: Find Initiator server
+  run_once: true
+  delegate_to: localhost
+  lineinfile:
+    path: "./files/k8s_join.txt"
+    line: "{{ item.key }}: {{ item.value }}"
+    create: yes
+    state: present
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+  with_items:
+    - key: endpoint
+      value: "{{ endpoint.stdout }}"
+    - key: token
+      value: "{{ token.stdout }}"
+    - key: ca_cert
+      value: "{{ ca_cert.stdout }}"
+    - key: cert_key
+      value: "{{ cert_key.stdout }}"
+     
