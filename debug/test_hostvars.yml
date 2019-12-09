@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: hostvars
+      debug:
+        var: hostvars['192.168.41.131']
+      run_once: true
+  

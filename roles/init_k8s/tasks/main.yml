@@ -109,4 +109,11 @@
   run_once: true
   when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
 
+- name: Setup WeaveWorks
+  shell: |
+    kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
 
