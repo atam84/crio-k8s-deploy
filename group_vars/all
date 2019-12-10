@@ -1,15 +1,17 @@
 ---
 
+# set the master node that performe action or leave black to select it from the masters list using inventory var
 master_initiator: 
 
 podman:
-  install: false
+  install: true
 
 skopeo:
-  install: false
+  install: true
 
 buildah:
-  install: false
+  install: true
+
 
 # https://github.com/helm/helm/releases
 helm:
