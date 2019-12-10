@@ -1,0 +1,36 @@
+---
+
+master_initiator: 
+
+podman:
+  install: false
+
+skopeo:
+  install: false
+
+buildah:
+  install: false
+
+# https://github.com/helm/helm/releases
+helm:
+  install: true
+  url: "https://get.helm.sh/helm-v3.0.1-linux-amd64.tar.gz"
+
+
+admin_cluster:
+  - remove_nodes:
+    - node: 192.168.41.132
+      reset: true
+    - node: 192.168.41.131
+      reset: true
+  - add_nodes:
+    - node: 192.168.41.131
+      type: master
+    - node: 192.168.41.132
+      type: worker
+  - options:
+      uptade: etc_hosts
+      update_inventory: true
+
+
+

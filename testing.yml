@@ -3,9 +3,4 @@
 - hosts: all
   become: yes
   roles:
-          #- prepare-server
-          #- cri-o
-    - init_k8s
-    - join_k8s
-    - add_worker
-    - add_master
+    - install_tools

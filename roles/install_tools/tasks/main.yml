@@ -1,0 +1,45 @@
+---
+
+- name: Install podman
+  yum:
+    name: podman
+    disable_excludes: all
+    update_cache: yes
+    state: latest
+  when: podman.install == true
+
+
+- name: Install buildah
+  yum:
+    name: buildah
+    disable_excludes: all
+    update_cache: yes
+    state: latest
+  when: podman.install == true
+
+
+- name: Install skopeo
+  yum:
+    name: skopeo
+    disable_excludes: all
+    update_cache: yes
+    state: latest
+  when: skopeo.install == true
+
+
+- name: Install Helm
+  block:
+    - name: Download and unarchive Helm
+      unarchive:
+        src: "{{ helm.url }}"
+        dest: /var/tmp
+        remote_src: yes
+
+    - name: Put the binary file in /usr/local/bin
+      copy:
+        src: /var/tmp/linux-amd64/helm
+        dest: /usr/local/bin/helm
+        mode: a+x 
+        remote_src: yes
+  when: helm.install == true
+

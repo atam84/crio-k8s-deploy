@@ -1,5 +1,13 @@
 ---
 
+- debug:
+    var: remove_nodes
+  run_once: true
+
+- debug:
+    var: add_nodes
+  run_once: true
+
 - name: Drain node(s), ignore daemonsets and delete local data
   shell: |
     kubectl drain {{ hostvars[item].ansible_facts.nodename }} --ignore-daemonsets --delete-local-data {{ options|default('') }}

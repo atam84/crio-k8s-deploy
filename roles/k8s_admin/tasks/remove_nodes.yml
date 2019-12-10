@@ -1,0 +1,31 @@
+---
+
+- name: these nodes will be removed
+  debug:
+    var: remove_nodes
+  run_once: true
+
+
+- name: Drain node(s), ignore daemonsets and delete local data
+  shell: |
+    kubectl drain {{ hostvars[item.node].ansible_facts.nodename }} --ignore-daemonsets --delete-local-data {{ options|default('') }}
+  delegate_to: "{{ master_initiator }}"
+  ignore_errors: true
+  with_items:
+    - "{{ remove_nodes }}"
+
+
+- name: Remove node(s)
+  shell:
+    kubectl delete node {{ hostvars[item.node].ansible_facts.nodename }} {{ options|default('') }}
+  delegate_to: "{{ master_initiator }}"
+  ignore_errors: true
+  with_items:
+    - "{{ remove_nodes }}"
+
+
+- name: Remove node(s)
+  shell:
+    kubeadm reset --force
+  when: inventory_hostname in target
+

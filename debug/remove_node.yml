@@ -4,4 +4,4 @@
   become: yes
   roles:
     - find_initiator
-    - remove_node
+    - k8s_admin

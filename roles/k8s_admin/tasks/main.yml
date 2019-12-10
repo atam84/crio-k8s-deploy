@@ -1,0 +1,11 @@
+---
+
+- name: these nodes will be removed
+  debug:
+    var: remove_nodes
+  run_once: true
+
+- debug:
+    var: add_nodes
+  run_once: true
+
