@@ -43,3 +43,11 @@
         remote_src: yes
   when: helm.install == true
 
+  #Helm
+  #  helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+  #  helm repo add brigade https://brigadecore.github.io/charts
+  #  helm repo add bitnami https://charts.bitnami.com/bitnami
+
+  #  /usr/local/bin/helm repo update
+
+  #  https://github.com/helm/charts/tree/master/stable
