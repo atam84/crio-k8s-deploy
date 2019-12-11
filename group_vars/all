@@ -13,6 +13,12 @@ buildah:
   install: true
 
 
+# flannel or weave
+pod_network: flannel
+
+#kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+#kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
 # https://github.com/helm/helm/releases
 helm:
   install: true

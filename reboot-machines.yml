@@ -1,0 +1,12 @@
+---
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: Reboot servers
+      shell: |
+        shutdown -rf now
+      register: shutdown
+
+    - debug:
+        msg: "{{ shutdown.stdout }}"

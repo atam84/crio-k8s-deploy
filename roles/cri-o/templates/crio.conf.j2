@@ -287,7 +287,8 @@ image_volumes = "mkdir"
 [crio.network]
 
 # Path to the directory where CNI configuration files are located.
-network_dir = "/etc/crio/net.d/"
+#network_dir = "/etc/crio/net.d/"
+network_dir = "/etc/cni/net.d/"
 
 # Paths to directories where CNI plugin binaries are located.
 plugin_dirs = [
