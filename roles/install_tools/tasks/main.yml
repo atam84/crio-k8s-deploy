@@ -35,12 +35,26 @@
         dest: /var/tmp
         remote_src: yes
 
-    - name: Put the binary file in /usr/local/bin
+    - name: "Put the binary file in {{ helm.bin_directory }}"
       copy:
         src: /var/tmp/linux-amd64/helm
-        dest: /usr/local/bin/helm
+        dest: "{{ helm.bin_directory }}/helm"
         mode: a+x 
         remote_src: yes
+
+    - name: Add helm repos
+      shell: |
+        {{ helm.bin_directory }}/helm repo add {{ item.name }} {{ item.url }}
+      ignore_errors: true
+      with_items: "{{ helm.repos }}"
+      when: helm.add_repos == true
+
+    - name: Update repos
+      shell: |
+        {{ helm.bin_directory }}/helm repo update
+      ignore_errors: true
+      when: helm.update_repos == true
+
   when: helm.install == true
 
   #Helm

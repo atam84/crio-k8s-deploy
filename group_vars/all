@@ -1,5 +1,8 @@
 ---
 
+upgrade_packages: false
+disable_ipv6: true
+
 # set the master node that performe action or leave black to select it from the masters list using inventory var
 master_initiator: 
 
@@ -23,6 +26,24 @@ pod_network: flannel
 helm:
   install: true
   url: "https://get.helm.sh/helm-v3.0.1-linux-amd64.tar.gz"
+  add_repos: true
+  update_repos: true
+  bin_directory: "/usr/bin"
+  repos:
+    - name: "incubator"
+      url: "https://kubernetes-charts-incubator.storage.googleapis.com/"
+    - name: "brigade"
+      url: "https://brigadecore.github.io/charts"
+    - name: "bitnami"
+      url: "https://charts.bitnami.com/bitnami"
+
+# metrics_server_install_method accept "git" => {url and plugin_dir become mandatory} or "helm" => {helm_app_name become mandatory}
+metrics_server:
+  install_method: "helm"
+  helm_app_name: "bitnami/metrics-server"
+  helm_sets: "rbac.create=true,apiService.create=true"
+  url: "https://github.com/kubernetes-incubator/metrics-server"
+  plugin_dir: "deploy/1.8+/"
 
 
 admin_cluster:

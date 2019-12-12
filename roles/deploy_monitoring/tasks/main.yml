@@ -1,0 +1,65 @@
+---
+
+- name: Install metrics-server using GIT
+  block: 
+    - name: Create checkout directory
+      file:
+        path: /var/tmp/metrics-server
+        state: directory
+
+    - name: Get metrics-server
+      git:
+        repo: "{{ metrics_server.url }}"
+        dest: /var/tmp/metrics-server
+
+    - name: kubectl apply
+      shell: |
+        kubectl apply -f /var/tmp/metrics-server/{{ metrics_server.plugin_dir }}
+      register: deploy_metrics_server
+      ignore_errors: true
+
+    - debug:
+        msg: "{{ deploy_metrics_server.stdout_lines }}"
+      ignore_errors: true
+
+    - name: patch metrics-server deployment
+      shell: |
+        kubectl patch deployment metrics-server --patch '{"spec": {"template": {"spec": {"containers": [{"name": "metrics-server","command": ["/metrics-server","--kubelet-insecure-tls","--metric-resolution=30s","--kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS,ExternalDNS,ExternalIP"]}]}}}}' -n kube-system
+      ignore_errors: true
+
+  when: metrics_server.install_method == "git" and hostvars[inventory_hostname]['cluster_initiator'] == "true"
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+
+
+#
+# Install metrics-server using helm
+#
+# helm uninstall metrics-server -n kube-system
+#
+
+- name: Install metrics-server using HELM
+  block:
+    - name: helm install
+      shell: |
+        {{ helm.bin_directory }}/helm install metrics-server {{ metrics_server.helm_app_name }} \
+        --set {{ metrics_server.helm_sets }} -n kube-system
+      register: deploy_helm_metrics_server
+      ignore_errors: true
+
+    - debug:
+        msg: "{{ deploy_helm_metrics_server.stdout_lines }}"
+
+    - name: patch metrics-server deployment
+      shell: |
+        kubectl patch deployment metrics-server --patch '{"spec": {"template": {"spec": {"containers": [{"name": "metrics-server","command": ["metrics-server","--secure-port=8443","--kubelet-insecure-tls","--metric-resolution=30s","--kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS,ExternalDNS,ExternalIP"]}]}}}}' -n kube-system
+      ignore_errors: true
+
+  when: metrics_server.install_method == "helm" and hostvars[inventory_hostname]['cluster_initiator'] == "true"
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+
+
+
