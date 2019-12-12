@@ -10,3 +10,4 @@
     - add_worker
     - add_master
     - install_tools
+    - deploy_monitoring

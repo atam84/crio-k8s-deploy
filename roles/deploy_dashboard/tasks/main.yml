@@ -1,0 +1,49 @@
+---
+
+- name: Deploy kubernetes dashboard
+  block:
+    - name: Get dashboard deployment file
+      get_url:
+        url: "{{ kubernetes_dashboard.url }}"
+        dest: /var/tmp/deploy_dashboard_k8s.yaml
+
+    - name: "Set namespace {{ kubernetes_dashboard.namespace }}"
+      shell: |
+        sed -i -e 's/namespace:.*/namespace: {{ kubernetes_dashboard.namespace }}/' -e 's/namespace=.*/namespace={{ kubernetes_dashboard.namespace }}/' /var/tmp/deploy_dashboard_k8s.yaml
+
+    - name: Deploy k8s dashborad
+      shell: |
+        kubectl apply -f /var/tmp/deploy_dashboard_k8s.yaml
+      register: deployment
+
+    - debug:
+        msg: "{{ deployment.stdout }}"
+
+    - name: Create service account dashborad-admin-sa
+      shell: |
+        kubectl create serviceaccount dashboard-admin-sa
+
+    - name: Create clusterrolebinding
+      shell: |
+        kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa
+
+    - name: Get token
+      shell: |
+        kubectl describe secret $(kubectl get serviceaccount dashboard-admin-sa -o jsonpath="{.secrets[0].name}") | grep token:
+        # token will be saved in the ansible machine
+      register: token
+      ignore_errors: true
+
+    - debug:
+        msg: "{{ token }}"
+
+    - name: Patch service dashboard
+      shell: |
+        kubectl patch service kubernetes-dashboard -n {{ kubernetes_dashboard.namespace }} --patch '{"spec": {"ports": [{"nodePort": {{ kubernetes_dashboard.node_port }},"port": 443,"protocol": "TCP","targetPort": 8443}],"type": "NodePort"}}'
+      ignore_errors: true
+      when: kubernetes_dashboard.expose == "true"
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+   #- kubernetes_dashboard.deploy == "true"
+

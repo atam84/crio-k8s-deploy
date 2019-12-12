@@ -36,6 +36,8 @@ helm:
       url: "https://brigadecore.github.io/charts"
     - name: "bitnami"
       url: "https://charts.bitnami.com/bitnami"
+    - name: "stable"
+      url: "https://kubernetes-charts.storage.googleapis.com"
 
 # metrics_server_install_method accept "git" => {url and plugin_dir become mandatory} or "helm" => {helm_app_name become mandatory}
 metrics_server:
@@ -44,6 +46,17 @@ metrics_server:
   helm_sets: "rbac.create=true,apiService.create=true"
   url: "https://github.com/kubernetes-incubator/metrics-server"
   plugin_dir: "deploy/1.8+/"
+
+# https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta6/aio/deploy/recommended.yaml
+# https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+# to patch: kubectl get service kubernetes-dashboard -n kubernetes-dashboard -o json
+#
+kubernetes_dashboard:
+  url: https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta6/aio/deploy/recommended.yaml
+  namespace: kubernetes-dashboard
+  deploy: true
+  expose: true
+  node_port: 8700
 
 
 admin_cluster:
