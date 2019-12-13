@@ -1,0 +1,13 @@
+---
+
+- name: NFS VOLUMES
+  include: create_nfs_volumes.yml
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+    - cluster_volumes.nfs == true
+
+- name: LOCAL VOLUMES
+  include: create_local_volumes.yml
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+    - cluster_volumes.local == true

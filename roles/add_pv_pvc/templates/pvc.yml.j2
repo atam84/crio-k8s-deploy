@@ -1,0 +1,24 @@
+{% for item in nfs_server.nfs_shares %}
+---
+apiVersion : v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ item.claimName|default("item.name }}-pvc")
+  labels:
+    storage-tier: {{ item.storageClassName|default(nfs_server.defaults.storageClassName) }}
+    volumeName: {{ item.name }}
+    pvName: {{ item.name }}-pv
+    pvcName: {{ item.claimName|default("item.name }}-pvc")
+    storageClass: {{ item.storageClass|default(nfs_server.defaults.storageClass) }}
+spec:
+  accessModes: {{ item.accessModes|default(nfs_server.defaults.accessModes) }}
+  volumeMode: {{ item.volumeMode|default(nfs_server.defaults.volumeMode) }}
+  resources:
+    requests:
+      storage: {{ item.size|default(nfs_server.defaults.size) }}
+  storageClassName: {{ item.storageClassName|default(nfs_server.defaults.storageClassName) }}
+  selector:
+    matchLabels:
+      volumeName: {{ item.name }}
+      pvName: {{ item.name }}-pv
+{% endfor %}

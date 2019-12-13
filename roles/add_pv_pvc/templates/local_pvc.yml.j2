@@ -1,0 +1,24 @@
+{% for item in local_storage.volumes %}
+---
+apiVersion : v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ item.claimName|default(item.name }}-pvc)
+  labels:
+    storage-tier: {{ item.storageClassName|default(local_storage.defaults.storageClassName) }}
+    volumeName: {{ item.name }}
+    pvName: {{ item.name }}-pv
+    pvcName: {{ item.claimName|default(item.name }}-pvc)
+    storageClass: {{ item.storageClass|default(local_storage.defaults.storageClass) }}
+spec:
+  accessModes: {{ item.accessModes|default(local_storage.defaults.accessModes) }}
+  volumeMode: {{ item.volumeMode|default(local_storage.defaults.volumeMode) }}
+  resources:
+    requests:
+      storage: {{ item.size|default(local_storage.defaults.size) }}
+  storageClassName: {{ item.storageClassName|default(local_storage.defaults.storageClassName) }}
+  selector:
+    matchLabels:
+      volumeName: {{ item.name }}
+      pvName: {{ item.name }}-pv
+{% endfor %}

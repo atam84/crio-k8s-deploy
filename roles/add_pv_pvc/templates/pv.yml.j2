@@ -1,0 +1,24 @@
+{% for item in nfs_server.nfs_shares %}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ item.name }}-pv
+  labels:
+    storage-tier: {{ item.storageClassName|default(nfs_server.defaults.storageClassName) }}
+    volumeName: {{ item.name }}
+    pvName: {{ item.name }}-pv
+    storageClass: {{ item.storageClass|default(nfs_server.defaults.storageClass) }}
+spec:
+  capacity:
+    storage: {{ item.size|default(nfs_server.defaults.size) }}
+  volumeMode: {{ item.volumeMode|default(nfs_server.defaults.volumeMode) }}
+  accessModes: {{ item.accessModes|default(nfs_server.defaults.accessModes) }}
+  persistentVolumeReclaimPolicy: {{ item.persistentVolumeReclaimPolicy|default(nfs_server.defaults.persistentVolumeReclaimPolicy) }}
+  storageClassName: {{ item.storageClassName|default(nfs_server.defaults.storageClassName) }}
+  mountOptions: {{ item.mountOptions|default(nfs_server.defaults.mountOptions)}}
+  nfs:
+    path: {{ nfs_server.nfs_root_dir }}/{{ item.name }}
+    server: {{ nfs_server.nfs_server_addr }}
+{% endfor %}
+

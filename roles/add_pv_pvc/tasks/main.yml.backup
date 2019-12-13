@@ -1,0 +1,57 @@
+---
+- debug:
+    var: cluster_volumes
+
+- name: Add PV and PVC to the cluster
+  block:
+    - name: NFS VOLUMES
+      block:
+        - name: (NFS) Create Persistent Volume definition 
+          template:
+            src: pv.yml.j2
+            dest: /var/tmp/pv_create.yml
+            backup: yes
+
+        - name: (NFS) Create Persistent Volume Claim definition
+          template:
+            src: pvc.yml.j2
+            dest: /var/tmp/pvc_create.yml
+            backup: yes
+
+        - name: (NFS) Apply PV configuration
+          shell: |
+            kubectl apply -f /var/tmp/pv_create.yml
+          register: pv_creation
+          ignore_errors: true
+
+        - debug:
+            msg: "{{ pv_creation.stdout_lines }}"
+          ignore_errors: true
+
+        - name: (NFS) Apply PV configuration
+          shell: |
+            kubectl apply -f /var/tmp/pvc_create.yml
+          register: pv_creation
+          ignore_errors: true
+
+        - debug:
+            msg: "{{ pv_creation.stdout_lines }}"
+          ignore_errors: true
+      when: 
+        - cluster_volumes.nfs == "true"
+
+    - name: LOCAL VOLUMES
+      block:
+        - name: (LOCAL) Create Persistent Volume definition
+          debug:
+            msg: "(LOCAL) Create Persistent Volume definition"
+
+        - name: (LOCAL) Create Persistent Volume Claim definition
+          debug:
+            msg: "(LOCAL) Create Persistent Volume Claim definition"
+      when: 
+        - cluster_volumes.local == "true"
+
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+

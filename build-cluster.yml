@@ -1,6 +1,11 @@
 ---
 
-- hosts: all
+- hosts: ntpservers
+  become: yes
+  roles:
+    - setup_nfsserver
+
+- hosts: all,!nfsservers
   become: yes
   roles:
     - prepare-server
@@ -11,3 +16,5 @@
     - add_master
     - install_tools
     - deploy_monitoring
+    - add_pv_pvc
+

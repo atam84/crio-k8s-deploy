@@ -5,4 +5,5 @@
   roles:
     #- install_tools
     #- deploy_monitoring
-    - deploy_dashboard
+    #- deploy_dashboard
+    - add_pv_pvc

@@ -1,0 +1,8 @@
+---
+
+- hosts: nfsservers
+  become: yes
+  roles:
+    #- install_tools
+    #- deploy_monitoring
+    - setup_nfsserver

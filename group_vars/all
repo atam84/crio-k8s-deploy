@@ -58,6 +58,60 @@ kubernetes_dashboard:
   expose: true
   node_port: 8700
 
+cluster_volumes:
+  nfs: true
+  local: true
+
+nfs_server:
+  nfs_server_addr: 192.168.41.131
+  setup: true
+  nfs_root_dir: /srv/nfs-volumes
+  resticted_network: 192.168.41.0/24
+  defaults:
+    options: "rw,all_squash,no_subtree_check,insecure"
+    size: 5Gi
+    accessModes: [ "ReadWriteOnce" ]
+    readOnly: false
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: slow
+    volumeMode: Filesystem
+    mountOptions: [ "hard", "nfsvers=4.1" ]
+    storageClass: nfs
+  nfs_shares:
+    - name: volume001
+      options: "rw,no_root_squash,no_subtree_check,insecure"
+      size: 10Gi
+      accessModes: [ "ReadWriteMany" ]
+      claimName: myFirstVolume
+    - name: volume002
+    - name: volume003
+    - name: volume004
+      readOnly: true
+      persistentVolumeReclaimPolicy: Recycle
+    - name: volume005
+      options: "rw,no_root_squash,no_subtree_check,insecure"
+      size: 10Gi
+      accessModes: [ "ReadWriteMany" ]
+
+local_storage:
+  defaults:
+    size: 5Gi
+    accessModes: [ "ReadWriteOnce" ]
+    readOnly: false
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: local-storage
+    volumeMode: Filesystem
+    storageClass: local-storage
+    root_path: /volumes/k8s_local
+    hostsAffinity: [ "node-master02.cluster.local" ]
+  volumes:
+    - name: lvol001
+      size: 10Gi
+      claimName: myFirstLocalVolume
+    - name: lvol002
+      hostsAffinity: [ "node-master02.cluster.local", "node-master01.cluster.local" ]
+    - name: lvol003
+      hostsAffinity: [ "node-worker01.cluster.local" ]
 
 admin_cluster:
   - remove_nodes:

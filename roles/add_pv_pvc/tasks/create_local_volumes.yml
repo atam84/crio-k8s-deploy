@@ -1,0 +1,21 @@
+---
+
+- name: Create local storage paths
+  file:
+    path: "{{ local_storage.defaults.root_path }}/{{ item.name }}"
+    state: directory
+    mode: 0777
+  with_items: "{{ local_storage.volumes }}"
+
+- name: (LOCAL) Create Persistent Volume definition
+  template:
+    src: local_pv.j2
+    dest: /var/tmp/local_pv_create.yaml
+    backup: yes
+
+- name: (LOCAL) Create Persistent Volume Claim definition
+  template:
+    src: local_pvc.j2
+    dest: /var/tmp/local_pvc_create.yaml
+    backup: yes
+

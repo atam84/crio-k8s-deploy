@@ -1,0 +1,57 @@
+---
+
+- debug:
+    var: nfs_server
+
+- name: Setup NFS server
+  block:
+    - name: Install NFS server packages
+      yum:
+        name: nfs-utils
+        state: present
+
+    - name: Create nfs root directory
+      file:
+        path: "{{ nfs_server.nfs_root_dir }}"
+        state: directory
+
+    - name: Create exports entries
+      lineinfile:
+        path: /etc/exports
+        regexp: "^{{ nfs_server.nfs_root_dir }}/{{ item.name }}"
+        state: present
+        line: "{{ nfs_server.nfs_root_dir }}/{{ item.name }} {{ nfs_server.resticted_network }}({{ item.options|default(nfs_server.defaults.options) }})"
+      with_items: "{{ nfs_server.nfs_shares }}"
+
+    - name: Create exported directories
+      file:
+        path: "{{ nfs_server.nfs_root_dir }}/{{ item.name }}"
+        mode: 0777
+        state: directory
+      with_items: "{{ nfs_server.nfs_shares }}"
+
+
+    - name: Force daemon reload
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable NFS server service
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      ignore_errors: true
+      with_items:
+        - nfs-server
+        - rpcbind
+
+    - name: Export filesystem
+      shell: |
+        exportfs -rav
+      register: nfs_exports
+
+    - debug:
+        msg: "{{ nfs_exports.stdout_lines }}"
+
+        #when: nfs_server.setup == "true"
+
