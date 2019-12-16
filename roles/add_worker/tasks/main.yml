@@ -4,23 +4,43 @@
 #--token <valid-bootstrap-token> \
 #--discovery-token-ca-cert-hash <ca-cert-sha256-hash>
 #
-- include_vars:
-    file: './files/k8s_join.txt'
-    name: params
+- block: 
+    - include_vars:
+        file: './files/k8s_join.txt'
+        name: params
 
-- debug:
-    var: params
-  run_once: true
+    - debug:
+        var: params
+      run_once: true
 
-- name: Add worker(s) node(s)
-  shell: |
-    kubeadm join {{ params.endpoint }} --token {{ params.token }} --discovery-token-ca-cert-hash sha256:{{ params.ca_cert }}
-  register: w_add
-  ignore_errors: true
+    - name: Add worker(s) node(s)
+      shell: |
+        kubeadm join {{ params.endpoint }} --token {{ params.token }} --discovery-token-ca-cert-hash sha256:{{ params.ca_cert }}
+      register: w_add
+      ignore_errors: true
+
+    - name: Add role to worker node node-role.kubernetes.io/worker=
+      shell: |
+        kubectl label node {{ hostvars[inventory_hostname]['host_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }} node-role.kubernetes.io/worker=
+      ignore_errors: true
+
+    - debug:
+        var: w_add.stdout
   when:
     - hostvars[inventory_hostname]['cluster_initiator'] == "false"
     - inventory_hostname in groups.workers
 
-- debug:
-    var: w_add.stdout
 
+- block:
+    - name: Add role to worker node node-role.kubernetes.io/worker=
+      shell: |
+        kubectl label node {{ hostvars[item]['host_name'] }}.{{ hostvars[item]['domain_name'] }} node-role.kubernetes.io/worker=
+      register: add_worker_label
+      ignore_errors: true
+      with_items: "{{ groups.workers }}"
+
+    - debug:
+        var: add_worker_label
+
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"

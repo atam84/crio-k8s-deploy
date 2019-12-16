@@ -1,20 +1,22 @@
 ---
 
-- hosts: ntpservers
-  become: yes
-  roles:
-    - setup_nfsserver
+#- hosts: nfsservers
+  #  become: yes
+  #  roles:
+          #    - setup_nfsserver
 
-- hosts: all,!nfsservers
+#- hosts: all,!nfsservers  if you don't use NFS server as node in the k8s cluster
+- hosts: all
   become: yes
   roles:
-    - prepare-server
-    - cri-o
-    - init_k8s
-    - join_k8s
+          #- prepare-server
+      #- cri-o
+      #- init_k8s
+      #- join_k8s
     - add_worker
-    - add_master
-    - install_tools
-    - deploy_monitoring
-    - add_pv_pvc
+      #- add_master
+      #- install_tools
+      #- deploy_monitoring
+      #- deploy_dashboard
+    #- add_pv_pvc
 

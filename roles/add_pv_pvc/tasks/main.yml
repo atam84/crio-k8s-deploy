@@ -6,6 +6,15 @@
     - hostvars[inventory_hostname]['cluster_initiator'] == "true"
     - cluster_volumes.nfs == true
 
+- name: LOCAL VOLUMES CREATE PATHS
+  file:
+    path: "{{ local_storage.defaults.root_path }}/{{ item.name }}"
+    state: directory
+    mode: 0777
+  ignore_errors: yes
+  with_items: "{{ local_storage.volumes }}"
+  when: cluster_volumes.local == true
+
 - name: LOCAL VOLUMES
   include: create_local_volumes.yml
   when:

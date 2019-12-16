@@ -14,6 +14,7 @@
     - name: Deploy k8s dashborad
       shell: |
         kubectl apply -f /var/tmp/deploy_dashboard_k8s.yaml
+      ignore_errors: true
       register: deployment
 
     - debug:
@@ -22,10 +23,12 @@
     - name: Create service account dashborad-admin-sa
       shell: |
         kubectl create serviceaccount dashboard-admin-sa
+      ignore_errors: true
 
     - name: Create clusterrolebinding
       shell: |
         kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa
+      ignore_errors: true
 
     - name: Get token
       shell: |
@@ -41,9 +44,8 @@
       shell: |
         kubectl patch service kubernetes-dashboard -n {{ kubernetes_dashboard.namespace }} --patch '{"spec": {"ports": [{"nodePort": {{ kubernetes_dashboard.node_port }},"port": 443,"protocol": "TCP","targetPort": 8443}],"type": "NodePort"}}'
       ignore_errors: true
-      when: kubernetes_dashboard.expose == "true"
+      when: kubernetes_dashboard.expose == true
   when:
     - hostvars[inventory_hostname]['cluster_initiator'] == "true"
-
-   #- kubernetes_dashboard.deploy == "true"
+    - kubernetes_dashboard.deploy == true
 
