@@ -12,3 +12,23 @@
     dest: /var/tmp/local_pvc_create.yaml
     backup: yes
 
+- name: (LOCAL) Apply PV configuration
+  shell: |
+    kubectl apply -f /var/tmp/local_pv_create.yaml
+  register: pv_creation
+  ignore_errors: true
+
+- debug:
+    msg: "{{ pv_creation.stdout_lines }}"
+  ignore_errors: true
+
+- name: (LOCAL) Apply PV configuration
+  shell: |
+    kubectl apply -f /var/tmp/local_pvc_create.yaml
+  register: pv_creation
+  ignore_errors: true
+
+- debug:
+    msg: "{{ pv_creation.stdout_lines }}"
+  ignore_errors: true
+
