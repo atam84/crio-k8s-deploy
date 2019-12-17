@@ -1,9 +1,9 @@
 ---
 
-- hosts: nfsservers
-  become: yes
-   roles:
-     - setup_nfsserver
+#- hosts: nfsservers
+#  become: yes
+#  roles:
+#     - setup_nfsserver
 
 #- hosts: all,!nfsservers  if you don't use NFS server as node in the k8s cluster
 - hosts: all
@@ -18,5 +18,5 @@
     - install_tools
     - deploy_monitoring
     - deploy_dashboard
-    #- add_pv_pvc
+    - add_pv_pvc
 

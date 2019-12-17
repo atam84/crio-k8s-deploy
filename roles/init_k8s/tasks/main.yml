@@ -29,7 +29,7 @@
     create: yes
     block: |
       [Service]
-       Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
+      Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
 
 
 - name: systemd daemon reload
@@ -123,7 +123,7 @@
     - pod_network == "weave"
 
 
-- name: Setup WeaveWorks
+- name: Setup Flannel
   shell: |
     kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
   delegate_facts: true

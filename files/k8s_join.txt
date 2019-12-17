@@ -1,4 +1,4 @@
-endpoint: 192.168.41.130:6443
-token: njerys.3d4mu0sroxph3liv
-ca_cert: dae3fd0ab026cca0ac84b2f63fcf53543776e556265ce6f4f8cbcb52b69fa958
-cert_key: 6aa7b36087d7885a457703afa2d52d6cc43bc718c3a3080a2313edf3328b02a7
+endpoint: 192.168.122.41:6443
+token: wv9ztc.08hewqf9tsr837ua
+ca_cert: 5958d48faa9419f3647ee40519ef07320bdb2d9b14bac99b0f0dbbe06eeb4ecd
+cert_key: 4368b4ea7c1e6a29089ada928881f68f948eaab2577be404f3ee301065333dec

@@ -63,10 +63,10 @@ cluster_volumes:
   local: true
 
 nfs_server:
-  nfs_server_addr: 192.168.41.131
+  nfs_server_addr: 192.168.122.52
   setup: true
   nfs_root_dir: /srv/nfs-volumes
-  resticted_network: 192.168.41.0/24
+  resticted_network: 192.168.122.0/24
   defaults:
     options: "rw,all_squash,no_subtree_check,insecure"
     size: 5Gi

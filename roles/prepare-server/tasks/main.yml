@@ -26,6 +26,7 @@
     - jq
     - wget
     - curl
+    - git
     disable_excludes: all
     update_cache: yes
     state: present

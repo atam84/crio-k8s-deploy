@@ -4,6 +4,6 @@
   become: yes
   roles:
     #- install_tools
-    #- deploy_monitoring
+    - deploy_monitoring
     #- deploy_dashboard
-    - add_pv_pvc
+    #- add_pv_pvc

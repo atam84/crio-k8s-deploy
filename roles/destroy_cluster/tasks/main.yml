@@ -5,6 +5,12 @@
     kubeadm reset --force
   register: reset_k8s
 
-- debug:
-    var: reset_k8s
+- name: Stop CRIO
+  systemd:
+    name: crio
+    state: stopped
 
+- name: Unlink network interfaces
+  shell:
+    for if in $(ip -br a s | egrep -v "lo|ens" | awk '{print $1}'); do ip link delete $if; done
+  ignore_errors: yes
