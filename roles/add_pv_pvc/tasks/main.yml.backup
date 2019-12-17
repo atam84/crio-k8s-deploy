@@ -38,7 +38,7 @@
             msg: "{{ pv_creation.stdout_lines }}"
           ignore_errors: true
       when: 
-        - cluster_volumes.nfs == "true"
+        - cluster_volumes.nfs == true
 
     - name: LOCAL VOLUMES
       block:
@@ -50,7 +50,7 @@
           debug:
             msg: "(LOCAL) Create Persistent Volume Claim definition"
       when: 
-        - cluster_volumes.local == "true"
+        - cluster_volumes.local == true
 
   when:
     - hostvars[inventory_hostname]['cluster_initiator'] == "true"

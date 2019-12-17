@@ -4,16 +4,21 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: {{ item.name }}-pv
+  labels:
+    storage-tier: {{ item.storageClassName|default(local_storage.defaults.storageClassName) }}
+    volumeName: {{ item.name }}
+    pvName: {{ item.name }}-pv
+    pvcName: {{ item.claimName|default(item.name) + "-pvc" }}
+    storageClass: {{ item.storageClass|default(local_storage.defaults.storageClass) }}
 spec:
   capacity:
     storage: {{ item.size|default(local_storage.defaults.size) }}
-  # volumeMode field requires BlockVolume Alpha feature gate to be enabled.
   volumeMode: {{ item.volumeMode|default(local_storage.defaults.volumeMode) }}
   accessModes: {{ item.accessModes|default(local_storage.defaults.accessModes) }}
   persistentVolumeReclaimPolicy: {{ item.persistentVolumeReclaimPolicy|default(local_storage.defaults.persistentVolumeReclaimPolicy) }}
   storageClassName: {{ item.storageClassName|default(local_storage.defaults.storageClassName) }}
   local:
-    path: {{ item.storagePath }}
+    path: {{ item.storagePath|default(local_storage.defaults.root_path) + "/" + item.name }}
   nodeAffinity:
     required:
       nodeSelectorTerms:

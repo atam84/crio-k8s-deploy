@@ -41,7 +41,7 @@ helm:
 
 # metrics_server_install_method accept "git" => {url and plugin_dir become mandatory} or "helm" => {helm_app_name become mandatory}
 metrics_server:
-  install_method: "helm"
+  install_method: "git"
   helm_app_name: "bitnami/metrics-server"
   helm_sets: "rbac.create=true,apiService.create=true"
   url: "https://github.com/kubernetes-incubator/metrics-server"
@@ -56,7 +56,7 @@ kubernetes_dashboard:
   namespace: kubernetes-dashboard
   deploy: true
   expose: true
-  node_port: 8700
+  node_port: 32700
 
 cluster_volumes:
   nfs: true
@@ -82,7 +82,7 @@ nfs_server:
       options: "rw,no_root_squash,no_subtree_check,insecure"
       size: 10Gi
       accessModes: [ "ReadWriteMany" ]
-      claimName: myFirstVolume
+      claimName: myfirstvolume
     - name: volume002
     - name: volume003
     - name: volume004
@@ -107,7 +107,8 @@ local_storage:
   volumes:
     - name: lvol001
       size: 10Gi
-      claimName: myFirstLocalVolume
+      claimName: myfirstlocalvolume
+      storagePath: /volumes/k8s_local/lvol001
     - name: lvol002
       hostsAffinity: [ "node-master02.cluster.local", "node-master01.cluster.local" ]
     - name: lvol003
