@@ -22,21 +22,48 @@
       description: CRI-O-113
       baseurl: https://cbs.centos.org/repos/paas7-crio-113-candidate/x86_64/os
 
+- name: Update cache
+  yum:
+    update_cache: yes
+
+#- name: Add Centos-extras-x86_64 repository used for containernetworking-plugins
+#  yum_repository:
+    #name: Centos-extras-x86_64
+    #file: Centos-extras-x86_64
+    #state: absent
 
 - name: Install rpm containernetworking-plugins v0.7.5
   yum:
     name: https://cbs.centos.org/kojifiles/packages/containernetworking-plugins/0.7.5/1.el7/x86_64/containernetworking-plugins-0.7.5-1.el7.x86_64.rpm
     state: present
+  when: build_cni_from_source == false
 
-- name: Update cache
-  yum:
-    update_cache: yes
+- block:
+    - name: Add Go package for the build
+      yum:
+        name: "{{ go_build_required_package }}"
+        state: present
 
-- name: Add Centos-extras-x86_64 repository used for containernetworking-plugins
-  yum_repository:
-    name: Centos-extras-x86_64
-    file: Centos-extras-x86_64
-    state: absent
+    - name: Git clone of the repository containernetworking
+      git:
+        repo: "{{ cni_git_url }}"
+        dest: "{{ cni_build_temp_folder }}"
+        version: "{{ cni_git_version }}"
+
+      # build and move cni binaries
+    - name: Build cni and move bin
+      shell: "{{ item }}"
+      loop:
+        - "{{ cni_build_temp_folder }}/build_linux.sh"
+        - "cp {{ cni_build_temp_folder }}/bin/* /usr/libexec/cni/"
+      
+      # Delete directory
+    - name: Delete temporary directory
+      file:
+        path: "{{ cni_build_temp_folder }}"
+        state: absent
+  when: build_cni_from_source == true
+
 
 - name: install CRI-O
   yum:
@@ -53,17 +80,33 @@
     path: "/etc/crio/net.d"
     state: directory
 
-- name: Push CRI-O configuration including CNI config for CRI-O
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-  with_items:
-    - src: 10-crio-bridge.conf.j2
-      dest: /etc/crio/net.d/10-crio-bridge.conf
-    - src: 99-loopback.conf.j2
-      dest: /etc/crio/net.d/99-loopback.conf
-    - src: crio.conf.j2
-      dest: /etc/crio/crio.conf
+- block:
+    - name: (FLANNEL) Push CRI-O configuration including CNI config for CRI-O
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        #- src: 10-crio-flannel.conf.j2
+        #  dest: "{{ cni_crio_config_directory }}/10-crio-flannel.conf"
+        - src: crio.conf.j2
+          dest: /etc/crio/crio.conf
+        #- src: 99-loopback.conf.j2
+        #  dest: "{{ cni_crio_config_directory }}/99-loopback.conf"
+  when: pod_network == "flannel"
+
+- block:
+    - name: (WEAVE) Push CRI-O configuration including CNI config for CRI-O
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        #- src: 10-crio-weave.j2
+        #  dest: "{{ cni_crio_config_directory }}/10-crio-weave.conf"
+        - src: crio.conf.j2
+          dest: /etc/crio/crio.conf
+        #- src: 99-loopback.conf.j2
+        #  dest: "{{ cni_crio_config_directory }}/99-loopback.conf"
+  when: pod_network == "weave"
 
 - name: systemd daemon reload
   systemd:

@@ -119,7 +119,7 @@ seccomp_profile = ""
 apparmor_profile = "crio-default-1.15.2-1.el7"
 
 # Cgroup management implementation used for the runtime.
-cgroup_manager = "cgroupfs"
+cgroup_manager = "{{ crio_cgroup_manager }}"
 
 # List of default capabilities for containers. If it is empty or commented out,
 # only the capabilities defined in the containers json file by the user/kube
@@ -288,9 +288,12 @@ image_volumes = "mkdir"
 
 # Path to the directory where CNI configuration files are located.
 #network_dir = "/etc/crio/net.d/"
-network_dir = "/etc/cni/net.d/"
+#network_dir = "/etc/cni/net.d/"
+network_dir = "{{ cni_crio_config_directory }}"
 
 # Paths to directories where CNI plugin binaries are located.
-plugin_dirs = [
-	"/usr/libexec/cni",
-]
+plugin_dirs = {{ crio_plugins_directory }}
+#plugin_dirs = [
+#	"/usr/libexec/cni",
+#        "/opt/cni/bin/"
+#]

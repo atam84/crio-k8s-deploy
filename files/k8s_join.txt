@@ -1,4 +1,4 @@
-endpoint: 192.168.122.41:6443
-token: wv9ztc.08hewqf9tsr837ua
-ca_cert: 5958d48faa9419f3647ee40519ef07320bdb2d9b14bac99b0f0dbbe06eeb4ecd
-cert_key: 4368b4ea7c1e6a29089ada928881f68f948eaab2577be404f3ee301065333dec
+endpoint: 192.168.41.130:6443
+token: 7kdamy.bfsj8jxpe3pl7i1a
+ca_cert: 5fe27ba3af006f853fef3389e484bcb5fac477150dd052545bf2c125e460cd71
+cert_key: 702b4aabf4ef44a7f2e5a1bcaf575d41f65b0bb7a8b9a8a5ba0815ab86ae7e9a

@@ -1,7 +1,26 @@
 ---
-
+reboot_servers_when_cluster_is_destroyed: true
+remove_images_when_cluster_is_destroyed: true
 upgrade_packages: false
 disable_ipv6: true
+
+keep_firewalld_enabled: false
+firewalld_allow_ports:
+  
+build_cni_from_source: flase
+cni_git_url: "https://github.com/containernetworking/plugins"
+cni_git_version: "v0.8.1"
+cni_build_temp_folder: "~/git"
+cni_crio_config_directory: "/etc/cni/net.d"
+crio_plugins_directory: '[ "/usr/libexec/cni", "/opt/cni/bin/" ]'
+crio_cgroup_manager: cgroupfs
+go_build_required_package:
+  - golang
+  - golang-bin
+  - golang-shared
+  - golang-tests
+  - golang-misc
+  - golang-race
 
 # set the master node that performe action or leave black to select it from the masters list using inventory var
 master_initiator: 
@@ -17,7 +36,7 @@ buildah:
 
 
 # flannel or weave
-pod_network: flannel
+pod_network: weave
 
 #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 #kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
@@ -41,7 +60,7 @@ helm:
 
 # metrics_server_install_method accept "git" => {url and plugin_dir become mandatory} or "helm" => {helm_app_name become mandatory}
 metrics_server:
-  install_method: "git"
+  install_method: "helm"
   helm_app_name: "bitnami/metrics-server"
   helm_sets: "rbac.create=true,apiService.create=true"
   url: "https://github.com/kubernetes-incubator/metrics-server"

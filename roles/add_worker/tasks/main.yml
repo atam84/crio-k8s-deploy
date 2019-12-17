@@ -19,11 +19,6 @@
       register: w_add
       ignore_errors: true
 
-    - name: Add role to worker node node-role.kubernetes.io/worker=
-      shell: |
-        kubectl label node {{ hostvars[inventory_hostname]['host_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }} node-role.kubernetes.io/worker=
-      ignore_errors: true
-
     - debug:
         var: w_add.stdout
   when:
