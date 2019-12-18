@@ -7,15 +7,31 @@
     name: firewalld.service
   when: keep_firewalld_enabled == false
 
-- name: Keep firewalld then configure it
+- name: Keep firewalld enabled -> then configure it
   block:
     - name: Stop and disable firewalld.service
       systemd:
         state: started
         enabled: yes
         name: firewalld.service
-    #
-    # Here we should add the firewalld roles
+
+    # Chain Rules
+    - name: Enable firewalld. Allow everything and forward traffic
+      firewalld:
+        immediate: yes
+        permanent: yes
+        rich_rule: "{{ item }}"
+        state: enabled
+      loop:
+        - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" accept'
+        - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" masquerade'
+
+    - name: Allow ports
+      firewalld:
+        permanent: yes
+        state: enabled
+        port: "{{ item }}"
+      loop: "{{ firewalld_allowed_ports }}"
   when: keep_firewalld_enabled == true
 
 - name: Install epel-release repos
@@ -31,12 +47,14 @@
     state: latest
   when: upgrade_packages == true
 
+
 - name: Install some packages :)
   yum:
     name: "{{ package_list }}"
     disable_excludes: all
     update_cache: yes
     state: present
+
 
 - name: Remove swapfile from /etc/fstab
   mount:
@@ -46,6 +64,7 @@
   with_items:
     - swap
     - none
+
     
 - name: Disable swap online
   shell: |
@@ -57,21 +76,22 @@
   selinux:
     state: disabled
     #setenforce 0
-    
+
+
 - name: Disable SELinux permanantly
   lineinfile:
     path: /etc/selinux/config
     regex: '^SELINUX='
     line: SELINUX=permissive
     #sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-    
+
+
 - name: Load modules br_netfilter and overlay
   modprobe:
     name: "{{ item }}"
     state: present
-  with_items:
-    - br_netfilter
-    - overlay
+  with_items: "{{ modules_to_load }}"
+
 
 - name: Load modules when system reboot
   lineinfile:
@@ -79,9 +99,8 @@
     create: yes
     line: "{{ item }}"
     state: present
-  with_items:
-    - br_netfilter
-    - overlay
+  with_items: "{{ modules_to_load }}"
+
 
 - name: Enable bridging and forwarding
   sysctl:
@@ -96,6 +115,7 @@
     - net.ipv4.ip_forward
     - net.bridge.bridge-nf-call-ip6tables
 
+
 - name: Disable IPv6
   sysctl:
     name: "{{ item }}"
@@ -109,6 +129,7 @@
     - net.ipv6.conf.default.disable_ipv6
   when: disable_ipv6 == true
 
+
 - name: Switch SSHD to IPv$ only
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -119,20 +140,21 @@
       regexp: ".*AddressFamily"
     - line: "ListenAddress 0.0.0.0"
       regexp: '.*ListenAddress'
-  when: disable_ipv6 == true
+  when: sshd_use_ipv4_only == true
 
-- name: Initialize hosts file creation
-  run_once: true
-  delegate_to: localhost
-  lineinfile:
-    path: "./templates/hosts_file_generated"
-    line: "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4"
-    create: yes
-    state: present
-    regexp: "^127.0.0.1"
 
 - name: Generate new /etc/hosts
   block:
+    - name: Initialize hosts file creation
+      run_once: true
+      delegate_to: localhost
+      lineinfile:
+        path: "./templates/hosts_file_generated"
+        line: "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4"
+        create: yes
+        state: present
+        regexp: "^127.0.0.1"
+
     - name: Create /etc/hosts file based on inventory information
       run_once: True
       delegate_to: localhost
@@ -155,3 +177,5 @@
       hostname:
         name: "{{ hostvars[inventory_hostname]['host_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }}"
   when: generate_hostname_and_create_etc_hosts == true
+
+

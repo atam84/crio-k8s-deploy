@@ -1,20 +1,58 @@
 ---
+#
 reboot_servers_when_cluster_is_destroyed: true
 remove_images_when_cluster_is_destroyed: true
+generate_hostname_and_create_etc_hosts: true
+keep_firewalld_enabled: false
 upgrade_packages: false
 disable_ipv6: true
-generate_hostname_and_create_etc_hosts: true
+sshd_use_ipv4_only: true
+firewalld_allowed_ports:
+  - "6443/tcp"
+  - "10250/tcp"
+  - "10251/tcp"
+  - "10252/tcp"
+  - "10255/tcp"
+  - "10053/tcp"
+  - "10053/udp"
+  - "2379/tcp"
+  - "2380/tcp"
+  - "22/tcp"
+  - "80/tcp"
+  - "8080/tcp"
+  - "443/tcp"
+  - "8443/tcp"
+  - "9443/tcp"
 
-keep_firewalld_enabled: false
-firewalld_allow_ports:
-  
-build_cni_from_source: flase
+modules_to_load:
+  - br_netfilter
+  - overlay
+
+build_cni_from_source: false
 cni_git_url: "https://github.com/containernetworking/plugins"
 cni_git_version: "v0.8.1"
 cni_build_temp_folder: "~/git"
+crio:
+  root: "/var/lib/containers/storage"
+  runroot: "/var/run/containers/storage"
+  config_directory: "/etc/cni/net.d"
+  plugins_directory: '[ "/usr/libexec/cni", "/opt/cni/bin/" ]'
+  cgroup_manager: cgroupfs
+  storage_driver: overlay
+  storage_option: '[ "overlay.override_kernel_check=1" ]'
+  stream_addr: "0.0.0.0"
+  stream_port: "0"
+  file_locking: "false"
+  apparmor_profile: "crio-default"
+  hooks_dir: '[ "/usr/share/containers/oci/hooks.d" ]'
+  log_size_max: 52428800
+  log_level: info
+  log_dir: "/var/log/crio/pods"
+
 cni_crio_config_directory: "/etc/cni/net.d"
 crio_plugins_directory: '[ "/usr/libexec/cni", "/opt/cni/bin/" ]'
 crio_cgroup_manager: cgroupfs
+
 go_build_required_package:
   - golang
   - golang-bin
@@ -105,6 +143,7 @@ nfs_server:
     volumeMode: Filesystem
     mountOptions: [ "hard", "nfsvers=4.1" ]
     storageClass: nfs
+    namespace: default
   nfs_shares:
     - name: volume001
       options: "rw,no_root_squash,no_subtree_check,insecure"
@@ -132,6 +171,7 @@ local_storage:
     storageClass: local-storage
     root_path: /volumes/k8s_local
     hostsAffinity: [ "node-master02.cluster.local" ]
+    namesapce: default
   volumes:
     - name: lvol001
       size: 10Gi
@@ -142,6 +182,10 @@ local_storage:
     - name: lvol003
       hostsAffinity: [ "node-worker01.cluster.local" ]
 
+
+#
+# this section should be generated automatically
+#
 admin_cluster:
   - remove_nodes:
     - node: 192.168.41.132
