@@ -3,6 +3,7 @@ reboot_servers_when_cluster_is_destroyed: true
 remove_images_when_cluster_is_destroyed: true
 upgrade_packages: false
 disable_ipv6: true
+generate_hostname_and_create_etc_hosts: true
 
 keep_firewalld_enabled: false
 firewalld_allow_ports:
@@ -21,6 +22,14 @@ go_build_required_package:
   - golang-tests
   - golang-misc
   - golang-race
+
+package_list:
+  - python3
+  - vim
+  - jq
+  - wget
+  - curl
+  - git
 
 # set the master node that performe action or leave black to select it from the masters list using inventory var
 master_initiator: 

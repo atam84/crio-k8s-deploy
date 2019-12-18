@@ -3,7 +3,20 @@
 - name: Stop and disable firewalld.service
   systemd:
     state: stopped
+    enabled: no
     name: firewalld.service
+  when: keep_firewalld_enabled == false
+
+- name: Keep firewalld then configure it
+  block:
+    - name: Stop and disable firewalld.service
+      systemd:
+        state: started
+        enabled: yes
+        name: firewalld.service
+    #
+    # Here we should add the firewalld roles
+  when: keep_firewalld_enabled == true
 
 - name: Install epel-release repos
   yum:
@@ -20,13 +33,7 @@
 
 - name: Install some packages :)
   yum:
-    name:
-    - python3
-    - vim
-    - jq
-    - wget
-    - curl
-    - git
+    name: "{{ package_list }}"
     disable_excludes: all
     update_cache: yes
     state: present
@@ -124,26 +131,27 @@
     state: present
     regexp: "^127.0.0.1"
 
-- name: Create /etc/hosts file based on inventory information
-  run_once: True
-  delegate_to: localhost
-  lineinfile:
-    path: "./templates/hosts_file_generated"
-    line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ hostvars[item]['host_name'] }} {{ hostvars[item]['host_name'] }}.{{ hostvars[item]['domain_name'] }}"
-    create: yes
-    state: present
-    regexp: "^{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-  with_items: "{{ groups['all'] }}"
-
-
-- name: Insert hosts information in /etc/hosts of targets machine
-  blockinfile:
-    block: "{{ lookup('file', './templates/hosts_file_generated') }}"
-    dest: "/etc/hosts"
-    backup: no
-    state: present
-
-- name: Set server hostname
-  hostname:
-    name: "{{ hostvars[inventory_hostname]['host_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }}"
-
+- name: Generate new /etc/hosts
+  block:
+    - name: Create /etc/hosts file based on inventory information
+      run_once: True
+      delegate_to: localhost
+      lineinfile:
+        path: "./templates/hosts_file_generated"
+        line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ hostvars[item]['host_name'] }} {{ hostvars[item]['host_name'] }}.{{ hostvars[item]['domain_name'] }}"
+        create: yes
+        state: present
+        regexp: "^{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      with_items: "{{ groups['all'] }}"
+    
+    - name: Insert hosts information in /etc/hosts of targets machine
+      blockinfile:
+        block: "{{ lookup('file', './templates/hosts_file_generated') }}"
+        dest: "/etc/hosts"
+        backup: no
+        state: present
+    
+    - name: Set server hostname
+      hostname:
+        name: "{{ hostvars[inventory_hostname]['host_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }}"
+  when: generate_hostname_and_create_etc_hosts == true

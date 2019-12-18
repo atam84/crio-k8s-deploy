@@ -12,11 +12,20 @@
     var: params
   run_once: true
 
-- name: Add master(s) node(s)
-  shell: |
-    kubeadm join {{ params.endpoint }} --token {{ params.token }} --discovery-token-ca-cert-hash sha256:{{ params.ca_cert }} --control-plane --certificate-key {{ params.cert_key }}
-  register: m_add
-  ignore_errors: true
+
+- block:
+    - name: Add master(s) node(s)
+      shell: |
+        kubeadm join {{ params.endpoint }} --token {{ params.token }} --discovery-token-ca-cert-hash sha256:{{ params.ca_cert }} --control-plane --certificate-key {{ params.cert_key }}
+      register: m_add
+      ignore_errors: true
+
+    - name: Set control
+      shell: |
+        mkdir -p $HOME/.kube
+        cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+        chown $(id -u):$(id -g) $HOME/.kube/config
+      ignore_errors: true
   when:
     - hostvars[inventory_hostname]['cluster_initiator'] == "false"
     - inventory_hostname in groups.masters

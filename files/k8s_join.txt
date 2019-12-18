@@ -1,4 +1,4 @@
-endpoint: 192.168.41.130:6443
-token: 7kdamy.bfsj8jxpe3pl7i1a
-ca_cert: 5fe27ba3af006f853fef3389e484bcb5fac477150dd052545bf2c125e460cd71
-cert_key: 702b4aabf4ef44a7f2e5a1bcaf575d41f65b0bb7a8b9a8a5ba0815ab86ae7e9a
+endpoint: 192.168.122.41:6443
+token: 8goqw6.2bivc2fr7o0bltrc
+ca_cert: 51a8e161afb83f14038c2ae216cd69cb1f6839deab130869c4c783418a6c436e
+cert_key: 9901c795a5553054a34a8469194af59d05d9f79b51ff46d31d5e2d26fdaf571c
