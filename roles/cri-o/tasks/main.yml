@@ -75,38 +75,36 @@
     disable_gpg_check: yes
     state: present
 
-- name: Create network directory for CRI-O network
+- name: Create crio directories
   file:
-    path: "/etc/crio/net.d"
+    path: "{{ item }}"
     state: directory
+  loop:
+    - "{{ crio.root }}"
+    - "{{ crio.runroot }}"
+    - "{{ crio.config_directory }}"
+    - "{{ crio.log_dir }}"
+    - "/usr/share/containers/oci/hooks.d"
 
 - block:
-    - name: (FLANNEL) Push CRI-O configuration including CNI config for CRI-O
+    - name: (FLANNEL) Push CNI config for CRI-O
       template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
       with_items:
-        #- src: 10-crio-flannel.conf.j2
-        #  dest: "{{ cni_crio_config_directory }}/10-crio-flannel.conf"
-        - src: crio.conf.j2
-          dest: /etc/crio/crio.conf
+        - src: 10-crio-flannel.conf.j2
+          dest: "{{ cni_crio_config_directory }}/10-crio-flannel.conf"
         #- src: 99-loopback.conf.j2
         #  dest: "{{ cni_crio_config_directory }}/99-loopback.conf"
   when: pod_network == "flannel"
 
-- block:
-    - name: (WEAVE) Push CRI-O configuration including CNI config for CRI-O
-      template:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-      with_items:
-        #- src: 10-crio-weave.j2
-        #  dest: "{{ cni_crio_config_directory }}/10-crio-weave.conf"
-        - src: crio.conf.j2
-          dest: /etc/crio/crio.conf
-        #- src: 99-loopback.conf.j2
-        #  dest: "{{ cni_crio_config_directory }}/99-loopback.conf"
-  when: pod_network == "weave"
+- name: Push CRI-O configuration
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: crio.conf.j2
+      dest: /etc/crio/crio.conf
 
 - name: systemd daemon reload
   systemd:

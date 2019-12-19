@@ -73,59 +73,15 @@
 - debug:
     msg: "Initiator server selected: {{ initiator }}"
 
-
-- name: Initialize the cluster
+- name: (FLANNEL) Initialize the cluster
   shell: |
     kubeadm init --cri-socket="unix:///var/run/crio/crio.sock" \
-                  --kubernetes-version $(kubeadm version -o short) \
-                  --apiserver-advertise-address={{ initiator }} \
-                  --upload-certs \
-                  --control-plane-endpoint {{ initiator }} \
-                  --pod-network-cidr 10.244.0.0/16 
-                  #--service-cidr 10.244.0.0/16
-                  #--allocate-node-cidrs=true \
-                  #--cluster-cidr=10.244.0.0/16 \
+                 --kubernetes-version $(kubeadm version -o short) \
+                 --apiserver-advertise-address={{ initiator }} \
+                 --upload-certs \
+                 --control-plane-endpoint {{ initiator }} \
+                 --pod-network-cidr 10.244.0.0/16 
   register: init_cluster
-  delegate_facts: true
-  ignore_errors: true
-  run_once: true
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
-
-
-- name: Save kubeadm init output
-  run_once: true
-  delegate_to: localhost
-  blockinfile:
-    path: "./files/kubeadm_init.txt"
-    marker: ""
-    create: yes
-    block: |
-      {{ init_cluster.stdout }}
-
-- name: Set control
-  shell: |
-    mkdir -p $HOME/.kube
-    cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
-    chown $(id -u):$(id -g) $HOME/.kube/config
-  delegate_facts: true
-  ignore_errors: true
-  run_once: true
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
-
-- name: Setup WeaveWorks
-  shell: |
-    kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-  delegate_facts: true
-  ignore_errors: true
-  run_once: true
-  when: 
-    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
-    - pod_network == "weave"
-
-
-- name: Setup Flannel
-  shell: |
-    kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
   delegate_facts: true
   ignore_errors: true
   run_once: true
@@ -133,9 +89,79 @@
     - hostvars[inventory_hostname]['cluster_initiator'] == "true"
     - pod_network == "flannel"
 
+- name: Initialize the cluster
+  shell: |
+    kubeadm init --cri-socket="unix:///var/run/crio/crio.sock" \
+                  --kubernetes-version $(kubeadm version -o short) \
+                  --apiserver-advertise-address={{ initiator }} \
+                  --upload-certs \
+                  --control-plane-endpoint {{ initiator }}
+  register: init_cluster
+  delegate_facts: true
+  ignore_errors: true
+  run_once: true
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+    - pod_network != "flannel"
+
+- name: Save kubeadm init output
+  run_once: true
+  delegate_to: localhost
+  ignore_errors: true
+  blockinfile:
+    path: "./files/kubeadm_init.txt"
+    marker: ""
+    create: yes
+    block: |
+      {{ init_cluster.stdout }}
+
+- block:
+    - name: Set control
+      shell: |
+        mkdir -p $HOME/.kube
+        cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+        chown $(id -u):$(id -g) $HOME/.kube/config
+      delegate_facts: true
+      ignore_errors: true
+      run_once: true
+
+    # YES there is a way to made this smarter
+    #
+    - name: Setup WEAVE
+      shell: |
+        kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+      delegate_facts: true
+      ignore_errors: true
+      run_once: true
+      when: pod_network == "weave"
+
+    - name: Setup FLANNEL
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+      delegate_facts: true
+      ignore_errors: true
+      run_once: true
+      when: pod_network == "flannel"
+
+    - name: Setup CALICO
+      shell: |
+        kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml
+      delegate_facts: true
+      ignore_errors: true
+      run_once: true
+      when: pod_network == "calico"
+
+    - name: Setup CANAL
+      shell: |
+        kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/canal.yaml
+      delegate_facts: true
+      ignore_errors: true
+      run_once: true
+      when: pod_network == "canal"
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
 #
-# kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
-# kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/canal.yaml
+# kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml
+# kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/canal.yaml
 # For flannel to work correctly, you must pass --pod-network-cidr=10.244.0.0/16 to kubeadm init.
 # kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
 # kubectl apply -f https://raw.githubusercontent.com/romana/romana/master/containerize/specs/romana-kubeadm.yml

@@ -1,9 +1,9 @@
 ---
-#
+
 reboot_servers_when_cluster_is_destroyed: true
 remove_images_when_cluster_is_destroyed: true
 generate_hostname_and_create_etc_hosts: true
-keep_firewalld_enabled: false
+keep_firewalld_enabled: true
 upgrade_packages: false
 disable_ipv6: true
 sshd_use_ipv4_only: true
@@ -63,6 +63,7 @@ go_build_required_package:
 
 package_list:
   - python3
+  - logrotate
   - vim
   - jq
   - wget
@@ -82,8 +83,14 @@ buildah:
   install: true
 
 
-# flannel or weave
-pod_network: weave
+# flannel, weave, calico, canal
+pod_network: calico
+
+pod_network_urls:
+  flannel: "https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
+  weave: "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  calico: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
+  canal: "https://docs.projectcalico.org/v3.10/manifests/canal.yaml"
 
 #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 #kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"

@@ -85,6 +85,15 @@
     line: SELINUX=permissive
     #sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
+- name: Apply logrotate configuration
+  template:
+    src: rsyslog_logrotate.j2
+    dest: /etc/logrotate.d/rsyslog
+
+- name: Restart rsyslog.service
+  systemd:
+    state: restarted
+    name: rsyslog.service
 
 - name: Load modules br_netfilter and overlay
   modprobe:
@@ -115,18 +124,43 @@
     - net.ipv4.ip_forward
     - net.bridge.bridge-nf-call-ip6tables
 
+#
+# To disable IPv6 we need to modify /etc/sysconfig/network-scripts/ifcfg-* for centos or redhat os
+# and put these config
+# IPV6INIT=yes
+# IPV6_AUTOCONF=yes
+# IPV6_DEFROUTE=yes
+# IPV6_FAILURE_FATAL=no
+#
+- block:
+    - name: Disable IPv6 at reboot
+      sysctl:
+        name: "{{ item }}"
+        value: '1'
+        sysctl_set: yes
+        state: present
+        sysctl_file: /etc/sysctl.d/98-disable-ip6.conf
+        reload: yes
+      with_items:
+        - net.ipv6.conf.all.disable_ipv6
+        - net.ipv6.conf.default.disable_ipv6
 
-- name: Disable IPv6
-  sysctl:
-    name: "{{ item }}"
-    value: '1'
-    sysctl_set: yes
-    state: present
-    sysctl_file: /etc/sysctl.d/98-disable-ip6.conf
-    reload: yes
-  with_items:
-    - net.ipv6.conf.all.disable_ipv6
-    - net.ipv6.conf.default.disable_ipv6
+    - block:
+        - name: list of the .conf files and store it in register
+          raw: find /etc/sysconfig/network-scripts -type f -name "ifcfg-*"
+          register: network_interfaces
+
+        - debug:
+            msg: "{{ network_interfaces.stdout_lines }}"
+
+        - name: Disable IPv6 from network interface config file
+          lineinfile:
+            path: "/etc/sysconfig/network-scripts/{{ item }}"
+            regexp: "^IPV6"
+            state: absent
+          loop: "{{ network_interfaces.stdout_lines }}"
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
   when: disable_ipv6 == true
 
 
