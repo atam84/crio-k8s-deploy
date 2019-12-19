@@ -3,6 +3,7 @@
 reboot_servers_when_cluster_is_destroyed: true
 remove_images_when_cluster_is_destroyed: true
 generate_hostname_and_create_etc_hosts: true
+add_logrotate_system_messages: true
 keep_firewalld_enabled: true
 upgrade_packages: false
 disable_ipv6: true
@@ -23,6 +24,10 @@ firewalld_allowed_ports:
   - "443/tcp"
   - "8443/tcp"
   - "9443/tcp"
+
+firewalld_rich_rules:
+  - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" accept'
+  - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" masquerade'
 
 modules_to_load:
   - br_netfilter
@@ -189,6 +194,25 @@ local_storage:
     - name: lvol003
       hostsAffinity: [ "node-worker01.cluster.local" ]
 
+#
+# Advenced Monitoring (Prometheuse, Grafana)
+#   echo -n Passw0rd | base64 => UGFzc3cwcmQ=
+#   echo -n admin | base64  => YWRtaW4=
+#
+advanced_monitoring:
+  defaults:
+    manespace: cluster-monitoring
+    use_persistent_volume: false
+  prometheus:
+    giving_name: prometheus
+    expose: true
+    host_port: 30000
+  grafana:
+    giving_name: grafana
+    admin_user: "YWRtaW4="
+    admin_password: "UGFzc3cwcmQ="
+    expose: true
+    host_port: 32000
 
 #
 # this section should be generated automatically

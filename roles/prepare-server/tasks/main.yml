@@ -22,9 +22,7 @@
         permanent: yes
         rich_rule: "{{ item }}"
         state: enabled
-      loop:
-        - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" accept'
-        - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" masquerade'
+      loop: "{{ firewalld_rich_rules }}"
 
     - name: Allow ports
       firewalld:
@@ -85,15 +83,21 @@
     line: SELINUX=permissive
     #sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
-- name: Apply logrotate configuration
-  template:
-    src: rsyslog_logrotate.j2
-    dest: /etc/logrotate.d/rsyslog
 
-- name: Restart rsyslog.service
-  systemd:
-    state: restarted
-    name: rsyslog.service
+- block:
+    - name: Apply logrotate configuration
+      template:
+        src: rsyslog_logrotate.j2
+        dest: /etc/logrotate.d/rsyslog
+      ignore_errors: true
+
+    - name: Restart rsyslog.service
+      systemd:
+        state: restarted
+        name: rsyslog.service
+      ignore_errors: true
+  when: add_logrotate_system_messages == true
+
 
 - name: Load modules br_netfilter and overlay
   modprobe:

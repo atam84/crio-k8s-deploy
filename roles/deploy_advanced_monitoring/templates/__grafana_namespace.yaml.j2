@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ advanced_monitoring.grafana.manespace|default(advanced_monitoring.defaults.manespace) }}
+  labels:
+    name: {{ advanced_monitoring.grafana.manespace|default(advanced_monitoring.defaults.manespace) }}
+    purpose: {{ advanced_monitoring.grafana.manespace|default(advanced_monitoring.defaults.manespace) }}
