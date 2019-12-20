@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server-conf
   labels:
-    name: prometheus-server-conf
-  namespace: {{ advanced_monitoring.prometheus.manespace|default(advanced_monitoring.defaults.manespace) }}
+    name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server-conf
+  namespace: {{ advanced_monitoring.prometheus.namespace|default(advanced_monitoring.defaults.namespace) }}
 data:
   prometheus.yml: |-
     global:

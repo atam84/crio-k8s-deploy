@@ -1,14 +1,15 @@
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: grafana
-  namespace: monitoring
+  name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
+  namespace: {{ advanced_monitoring.grafana.namespace|default(advanced_monitoring.defaults.namespace) }}
   labels: &Labels
-    k8s-app: grafana
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/component: grafana
+    k8s-app: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
+    app.kubernetes.io/name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
+    app.kubernetes.io/component: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
 spec:
-  serviceName: grafana-service
+  serviceName: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-service
   replicas: 1
   selector:
     matchLabels: *Labels
@@ -16,7 +17,7 @@ spec:
     metadata:
       labels: *Labels
     spec:
-      serviceAccountName: grafana
+      serviceAccountName: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
       # Configure an init container that will `chmod 777` Grafana's data directory 
       # and volume before the main Grafana container starts up. 
       # To learn more about init containers, consult https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
@@ -30,7 +31,7 @@ spec:
 #            - name: grafana-data
 #              mountPath: "/var/lib/grafana"
       containers:
-        - name: grafana
+        - name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
           # The main Grafana container, which uses the `grafana/grafana:6.0.1` image 
           # from https://hub.docker.com/r/grafana/grafana
           image: grafana/grafana #:6.0.1
@@ -52,7 +53,7 @@ spec:
             - name: service
               containerPort: 80
               protocol: TCP
-            - name: grafana
+            - name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}Port
               containerPort: 3000
               protocol: TCP
           # Set the `GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD` environment variables 
@@ -61,12 +62,12 @@ spec:
             - name: GF_SECURITY_ADMIN_USER
               valueFrom:
                 secretKeyRef:
-                  name: grafana-secret
+                  name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-secret
                   key: admin-user
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: grafana-secret
+                  name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-secret
                   key: admin-password
             - name: GF_INSTALL_PLUGINS
               value: yesoreyeram-boomtable-panel
@@ -99,19 +100,19 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: grafana-ini
+            name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-ini
         - name: datasources
           configMap:
-            name: grafana-datasources
+            name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-datasources
         - name: dashboardproviders
           configMap:
-            name: grafana-dashboardproviders
+            name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-dashboardproviders
         - name: dashboards
           configMap:
-            name: grafana-dashboards-conf
+            name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-dashboards-conf
 #  volumeClaimTemplates:
 #  - metadata:
-#      name: grafana-data
+#      name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-data
 #    spec:
 #      storageClassName: do-block-storage
 #      accessModes:

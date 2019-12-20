@@ -11,7 +11,7 @@ metadata:
 spec:
   ports:
     # Routes port 80 to port 3000 of the Grafana StatefulSet Pods
-{% if advanced_monitoring.grafana.expose %}
+{% if advanced_monitoring.grafana.expose is defined and advanced_monitoring.grafana.expose is sameas true %}
     - name: http
       nodePort: {{ advanced_monitoring.grafana.host_port|default("32000") }}
       port: 80

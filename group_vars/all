@@ -25,18 +25,22 @@ firewalld_allowed_ports:
   - "8443/tcp"
   - "9443/tcp"
 
+# Allow any internal communication in the host machine
 firewalld_rich_rules:
   - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" accept'
   - 'rule family="ipv4" source address="0.0.0.0/0" destination address="0.0.0.0/0" masquerade'
 
+# List of modules to load br_netfilter and overlay both are important for k8s
 modules_to_load:
   - br_netfilter
   - overlay
 
+# If you need to build CNI from source
 build_cni_from_source: false
 cni_git_url: "https://github.com/containernetworking/plugins"
 cni_git_version: "v0.8.1"
 cni_build_temp_folder: "~/git"
+# CRI-O configuration
 crio:
   root: "/var/lib/containers/storage"
   runroot: "/var/run/containers/storage"
@@ -54,10 +58,13 @@ crio:
   log_level: info
   log_dir: "/var/log/crio/pods"
 
+## deprecated will be removed soon
 cni_crio_config_directory: "/etc/cni/net.d"
 crio_plugins_directory: '[ "/usr/libexec/cni", "/opt/cni/bin/" ]'
 crio_cgroup_manager: cgroupfs
+## end of deprecation
 
+# Package needed for CNI build
 go_build_required_package:
   - golang
   - golang-bin
@@ -66,6 +73,7 @@ go_build_required_package:
   - golang-misc
   - golang-race
 
+# These package should be installed in all node in the preparation stage
 package_list:
   - python3
   - logrotate
@@ -75,9 +83,10 @@ package_list:
   - curl
   - git
 
-# set the master node that performe action or leave black to select it from the masters list using inventory var
+# () set the master node that performe action or leave black to select it from the masters list using inventory var
 master_initiator: 
 
+# Set install true if you need any of these tools in all your node
 podman:
   install: true
 
@@ -88,18 +97,17 @@ buildah:
   install: true
 
 
-# flannel, weave, calico, canal
+# What network do you need ? flannel (present issues need to be fixed in the future), weave, calico, canal
 pod_network: calico
 
+# You can modify the URL bellow if you want use other version (should be useful in the future)
 pod_network_urls:
   flannel: "https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
   weave: "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
   calico: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
   canal: "https://docs.projectcalico.org/v3.10/manifests/canal.yaml"
 
-#kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-#kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-
+# Helm should be installed only in the masters nodes you can add more repos or use your inernal repo and remove the others
 # https://github.com/helm/helm/releases
 helm:
   install: true
@@ -118,8 +126,10 @@ helm:
       url: "https://kubernetes-charts.storage.googleapis.com"
 
 # metrics_server_install_method accept "git" => {url and plugin_dir become mandatory} or "helm" => {helm_app_name become mandatory}
+# in the case of using internal Helm repo you need to modify metrics_server.helm_app_name if you use helm as install method
+# otherwise you need to point in your internal git repo for metrics-server if you don't have access to internet
 metrics_server:
-  install_method: "helm"
+  install_method: "git"
   helm_app_name: "bitnami/metrics-server"
   helm_sets: "rbac.create=true,apiService.create=true"
   url: "https://github.com/kubernetes-incubator/metrics-server"
@@ -128,7 +138,7 @@ metrics_server:
 # https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta6/aio/deploy/recommended.yaml
 # https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
 # to patch: kubectl get service kubernetes-dashboard -n kubernetes-dashboard -o json
-#
+# Deploy kubernetes dashboard
 kubernetes_dashboard:
   url: https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta6/aio/deploy/recommended.yaml
   namespace: kubernetes-dashboard
@@ -136,10 +146,12 @@ kubernetes_dashboard:
   expose: true
   node_port: 32700
 
+# You need to setup some PV and there PVC when the cluster is ployed ? can be useful if you need some persistence quickly
 cluster_volumes:
   nfs: true
   local: true
 
+# These informations are used to made your NFS storage and to make the PV and PVC automatically
 nfs_server:
   nfs_server_addr: 192.168.122.52
   setup: true
@@ -172,6 +184,8 @@ nfs_server:
       size: 10Gi
       accessModes: [ "ReadWriteMany" ]
 
+# This section is used to configure local storage the same directory structure will be created into nodes
+# Important the data is not synchronized between nodes
 local_storage:
   defaults:
     size: 5Gi
@@ -195,13 +209,13 @@ local_storage:
       hostsAffinity: [ "node-worker01.cluster.local" ]
 
 #
-# Advenced Monitoring (Prometheuse, Grafana)
+# Advanced Monitoring (Prometheuse, Grafana)
 #   echo -n Passw0rd | base64 => UGFzc3cwcmQ=
 #   echo -n admin | base64  => YWRtaW4=
 #
 advanced_monitoring:
   defaults:
-    manespace: cluster-monitoring
+    namespace: cluster-monitoring
     use_persistent_volume: false
   prometheus:
     giving_name: prometheus
@@ -215,7 +229,7 @@ advanced_monitoring:
     host_port: 32000
 
 #
-# this section should be generated automatically
+# this section should be generated automatically in an other file and will be used for the cluster administration (drain node, add node ...)
 #
 admin_cluster:
   - remove_nodes:

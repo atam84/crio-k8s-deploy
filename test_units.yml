@@ -6,4 +6,5 @@
     #- install_tools
     #- deploy_monitoring
     #- deploy_dashboard
-    - add_pv_pvc
+    #- add_pv_pvc
+    - deploy_advanced_monitoring

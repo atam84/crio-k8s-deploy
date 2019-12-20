@@ -2,32 +2,32 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: {{ advanced_monitoring.prometheus.manespace|default(advanced_monitoring.defaults.manespace) }}
-  name: node-exporter
+  namespace: {{ advanced_monitoring.prometheus.namespace|default(advanced_monitoring.defaults.namespace) }}
+  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter-service
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: prometheus-node-exporter
-  namespace: monitoring
+  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
+  namespace: {{ advanced_monitoring.prometheus.namespace|default(advanced_monitoring.defaults.namespace) }}
   labels:
-    k8s-app: node-exporter
-    app.kubernetes.io/name: prometheus-node-exporter
-    app.kubernetes.io/component: node-exporter
+    k8s-app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
+    app.kubernetes.io/name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
+    app.kubernetes.io/component: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
 spec:
   updateStrategy:
     type: OnDelete
   selector:
     matchLabels:
-      k8s-app: node-exporter
+      k8s-app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
   template:
     metadata:
       labels:
-        k8s-app: node-exporter
+        k8s-app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
     spec:
-      serviceAccountName: node-exporter
+      serviceAccountName: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter-service
       containers:
-        - name: prometheus-node-exporter
+        - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-node-exporter
           # Use the `quay.io/prometheus/node-exporter:v0.17.0` image
           image: prometheus/node-exporter
           imagePullPolicy: Always

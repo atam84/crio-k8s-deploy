@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus-deployment
-  namespace: monitoring
+  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-deployment
+  namespace: {{ advanced_monitoring.prometheus.namespace|default(advanced_monitoring.defaults.namespace) }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prometheus-server
+      app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server
   template:
     metadata:
       labels:
-        app: prometheus-server
+        app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server
     spec:
       containers:
-        - name: prometheus
+        - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}
           image: prom/prometheus:v2.2.1
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
@@ -23,33 +23,44 @@ spec:
           ports:
             - containerPort: 9090
           volumeMounts:
-            - name: prometheus-config-volume
+            - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-config-volume
               mountPath: /etc/prometheus/
-            - name: prometheus-storage-volume
+            - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-storage-volume
               mountPath: /prometheus/
       volumes:
-        - name: prometheus-config-volume
+        - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-config-volume
           configMap:
             defaultMode: 420
-            name: prometheus-server-conf
+            name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server-conf
 
-        - name: prometheus-storage-volume
+        - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-storage-volume
           emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: prometheus-service
-  namespace: monitoring
+  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-service
+  namespace: {{ advanced_monitoring.prometheus.namespace|default(advanced_monitoring.defaults.namespace) }}
   annotations:
       prometheus.io/scrape: 'true'
       prometheus.io/port:   '9090'
-
 spec:
   selector:
-    app: prometheus-server
+    app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server
   type: NodePort
   ports:
-    - port: 8080
+{% if advanced_monitoring.prometheus.expose is defined and advanced_monitoring.prometheus.expose is sameas true %}
+    - name: http
+      port: 8080
       targetPort: 9090
-      nodePort: 30000
+      protocol: TCP
+      nodePort: {{ advanced_monitoring.prometheus.host_port }}
+  type: NodePort
+{% else %}
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 3000
+  type: ClusterIP
+{% endif %}
+
