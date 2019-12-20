@@ -217,6 +217,13 @@ advanced_monitoring:
   defaults:
     namespace: cluster-monitoring
     use_persistent_volume: false
+    ressources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
   prometheus:
     giving_name: prometheus
     expose: true
@@ -227,6 +234,16 @@ advanced_monitoring:
     admin_password: "UGFzc3cwcmQ="
     expose: true
     host_port: 32000
+  kube-state_metrics:
+  node-exporter:
+  prom-alert-manager:
+
+
+# https://stackoverflow.com/questions/56959545/prometheus-node-exporter-on-kubernetes
+# https://github.com/helm/charts/tree/master/stable/prometheus/templates
+# https://github.com/helm/charts/tree/master/stable/prometheus-node-exporter/templates
+# https://github.com/do-community/doks-monitoring/tree/master/manifest
+
 
 #
 # this section should be generated automatically in an other file and will be used for the cluster administration (drain node, add node ...)
