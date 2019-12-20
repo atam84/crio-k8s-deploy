@@ -53,7 +53,7 @@ spec:
             - name: service
               containerPort: 80
               protocol: TCP
-            - name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}Port
+            - name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
               containerPort: 3000
               protocol: TCP
           # Set the `GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD` environment variables 
@@ -69,8 +69,8 @@ spec:
                 secretKeyRef:
                   name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-secret
                   key: admin-password
-            - name: GF_INSTALL_PLUGINS
-              value: yesoreyeram-boomtable-panel
+          #  - name: GF_INSTALL_PLUGINS
+          #    value: yesoreyeram-boomtable-panel
           # Define a liveness and readiness probe that will hit `/api/health` using port `3000`. 
           # To learn more about Liveness and Readiness Probes, 
           # consult https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/

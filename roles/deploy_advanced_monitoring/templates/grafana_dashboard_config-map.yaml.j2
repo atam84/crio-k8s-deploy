@@ -1,0 +1,16 @@
+---
+# Dashboards generated using kubernetes-mixin (https://github.com/kubernetes-monitoring/kubernetes-mixin)
+# Note that dashboards like the "Scheduler" dashboard have been omitted 
+# due those components not being exposed on DigitalOcean Kubernetes. 
+# To learn more about DigitalOcean Kubernetes’s architecture, consult
+# https://www.digitalocean.com/docs/kubernetes/overview/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-dashboards-conf
+  namespace: {{ advanced_monitoring.grafana.namespace|default(advanced_monitoring.defaults.namespace) }}
+  labels:
+    app.kubernetes.io/name: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}-dashboards-conf
+    app.kubernetes.io/component: {{ advanced_monitoring.grafana.giving_name|default("grafana") }}
+data:
+

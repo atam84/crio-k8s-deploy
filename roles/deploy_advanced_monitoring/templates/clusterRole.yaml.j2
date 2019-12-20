@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-role
+  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}
 rules:
 - apiGroups: [""]
   resources:
@@ -19,6 +19,12 @@ rules:
   verbs: ["get", "list", "watch"]
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: {{ advanced_monitoring.prometheus.namespace|default(advanced_monitoring.defaults.namespace) }}
+  name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding

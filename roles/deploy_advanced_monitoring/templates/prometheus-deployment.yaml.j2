@@ -14,6 +14,7 @@ spec:
       labels:
         app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server
     spec:
+      serviceAccountName: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}
       containers:
         - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}
           image: prom/prometheus:v2.2.1
@@ -23,17 +24,17 @@ spec:
           ports:
             - containerPort: 9090
           volumeMounts:
-            - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-config-volume
+            - name: prometheus-config-volume
               mountPath: /etc/prometheus/
-            - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-storage-volume
+            - name: prometheus-storage-volume
               mountPath: /prometheus/
       volumes:
-        - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-config-volume
+        - name: prometheus-config-volume
           configMap:
             defaultMode: 420
             name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server-conf
 
-        - name: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-storage-volume
+        - name: prometheus-storage-volume
           emptyDir: {}
 ---
 apiVersion: v1
@@ -47,14 +48,13 @@ metadata:
 spec:
   selector:
     app: {{ advanced_monitoring.prometheus.giving_name|default("prometheus") }}-server
-  type: NodePort
   ports:
 {% if advanced_monitoring.prometheus.expose is defined and advanced_monitoring.prometheus.expose is sameas true %}
     - name: http
       port: 8080
       targetPort: 9090
       protocol: TCP
-      nodePort: {{ advanced_monitoring.prometheus.host_port }}
+      nodePort: {{ advanced_monitoring.prometheus.host_port|default(30000) }}
   type: NodePort
 {% else %}
     - name: http

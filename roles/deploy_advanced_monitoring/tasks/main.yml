@@ -3,11 +3,12 @@
 - name: Generate kubernetes config file for grafana and prometheus
   template:
     src: "{{ item }}.j2"
-    dest: "/var/tmp/{{ item }}"
+    dest: "/var/tmp/mon/{{ item }}"
   ignore_errors: yes
   with_items:
     - clusterRole.yaml
     - grafana_config-map.yaml
+    - grafana_dashboard_config-map.yaml
     - grafana_namespace.yaml
     - grafana_secret.yaml
     - grafana_service-account.yaml
@@ -17,4 +18,17 @@
     - prom_config-map.yaml
     - prometheus-deployment.yaml
     - prometheus_namespace.yaml
+    - kube-state_serviceaccount.yaml
+    - kube-state_metrics-service.yaml
+    - kube-state-metrics_deployment.yaml
   when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
+- name: Add grafana dashboards
+  blockinfile:
+    path: "/var/tmp/mon/grafana_dashboard_config-map.yaml"
+    insertafter: "data:"
+    block: |
+     {{lookup('file', 'files/grafana_dashboards') }}
+  ignore_errors: yes
+  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+
