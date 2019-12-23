@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2019-12-21T20:57:57Z"
+  labels:
+    app: prometheus
+    chart: prometheus-9.7.0
+    component: server
+    heritage: Helm
+    release: prometheus
+  name: prometheus-server
+  namespace: default
+  resourceVersion: "46273"
+  selfLink: /api/v1/namespaces/default/services/prometheus-server
+  uid: 74104a51-dba1-4d4f-9833-185abbefce56
+spec:
+  clusterIP: 10.96.183.134
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    nodePort: 31411
+    port: 80
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app: prometheus
+    component: server
+    release: prometheus
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}

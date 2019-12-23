@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  annotations:
+    endpoints.kubernetes.io/last-change-trigger-time: "2019-12-21T20:57:57Z"
+  creationTimestamp: "2019-12-21T20:57:57Z"
+  labels:
+    app: prometheus
+    chart: prometheus-9.7.0
+    component: node-exporter
+    heritage: Helm
+    release: prometheus
+    service.kubernetes.io/headless: ""
+  name: prometheus-node-exporter
+  namespace: default
+  resourceVersion: "45770"
+  selfLink: /api/v1/namespaces/default/endpoints/prometheus-node-exporter
+  uid: d06f32c9-d9db-4cac-8b48-67a66c37f0ca
+subsets:
+- addresses:
+  - ip: 192.168.122.51
+    nodeName: k8s-worker01.cluster.local
+    targetRef:
+      kind: Pod
+      name: prometheus-node-exporter-xjnsw
+      namespace: default
+      resourceVersion: "44263"
+      uid: d42ea447-743d-4ce5-9c2f-e9c64cf1a585
+  - ip: 192.168.122.52
+    nodeName: k8s-worker02.cluster.local
+    targetRef:
+      kind: Pod
+      name: prometheus-node-exporter-nj5d7
+      namespace: default
+      resourceVersion: "44281"
+      uid: 701ae385-a648-4cbc-b0f4-af82b7d853e7
+  ports:
+  - name: metrics
+    port: 9100
+    protocol: TCP

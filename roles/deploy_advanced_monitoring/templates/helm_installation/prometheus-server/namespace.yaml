@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2019-12-19T23:22:31Z"
+  name: default
+  resourceVersion: "157"
+  selfLink: /api/v1/namespaces/default
+  uid: 24926a10-9290-48ee-94c5-9201596bcb53
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2019-12-21T20:57:57Z"
+  labels:
+    app: prometheus
+    chart: prometheus-9.7.0
+    component: kube-state-metrics
+    heritage: Helm
+    release: prometheus
+  name: prometheus-kube-state-metrics
+  namespace: default
+  resourceVersion: "44121"
+  selfLink: /api/v1/namespaces/default/services/prometheus-kube-state-metrics
+  uid: 622ba566-8ddd-45da-b58a-683befd74987
+spec:
+  clusterIP: None
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: prometheus
+    component: kube-state-metrics
+    release: prometheus
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

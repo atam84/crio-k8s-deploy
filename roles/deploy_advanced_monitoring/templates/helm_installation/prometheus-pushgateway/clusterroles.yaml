@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: "2019-12-21T20:57:57Z"
+  labels:
+    app: prometheus
+    chart: prometheus-9.7.0
+    component: pushgateway
+    heritage: Helm
+    release: prometheus
+  name: prometheus-pushgateway
+  resourceVersion: "44106"
+  selfLink: /apis/rbac.authorization.k8s.io/v1/clusterroles/prometheus-pushgateway
+  uid: f03c7f30-c635-49de-89f0-58cdbbfe372f
+rules: null

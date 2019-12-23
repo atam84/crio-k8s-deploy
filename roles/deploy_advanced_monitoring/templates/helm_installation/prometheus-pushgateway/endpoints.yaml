@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  annotations:
+    endpoints.kubernetes.io/last-change-trigger-time: "2019-12-21T20:58:30Z"
+  creationTimestamp: "2019-12-21T20:57:58Z"
+  labels:
+    app: prometheus
+    chart: prometheus-9.7.0
+    component: pushgateway
+    heritage: Helm
+    release: prometheus
+  name: prometheus-pushgateway
+  namespace: default
+  resourceVersion: "44320"
+  selfLink: /api/v1/namespaces/default/endpoints/prometheus-pushgateway
+  uid: 827c5529-d3c4-4d27-98be-b4bb20adce1f
+subsets:
+- addresses:
+  - ip: 192.168.170.209
+    nodeName: k8s-worker02.cluster.local
+    targetRef:
+      kind: Pod
+      name: prometheus-pushgateway-78b99d557b-vsq46
+      namespace: default
+      resourceVersion: "44318"
+      uid: 517fe259-5bf6-41fb-a83a-507f84739886
+  ports:
+  - name: http
+    port: 9091
+    protocol: TCP

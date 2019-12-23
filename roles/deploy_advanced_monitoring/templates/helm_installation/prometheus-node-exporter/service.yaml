@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+  creationTimestamp: "2019-12-21T20:57:57Z"
+  labels:
+    app: prometheus
+    chart: prometheus-9.7.0
+    component: node-exporter
+    heritage: Helm
+    release: prometheus
+  name: prometheus-node-exporter
+  namespace: default
+  resourceVersion: "44120"
+  selfLink: /api/v1/namespaces/default/services/prometheus-node-exporter
+  uid: e5092080-4b4a-486a-9015-3859f3137f81
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 9100
+    protocol: TCP
+    targetPort: 9100
+  selector:
+    app: prometheus
+    component: node-exporter
+    release: prometheus
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
