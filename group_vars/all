@@ -208,11 +208,30 @@ local_storage:
     - name: lvol003
       hostsAffinity: [ "node-worker01.cluster.local" ]
 
-#
+##
+deploy_monitoring_using_helm: true
+deploy_monitoring_using_helm_use_pv: false
+
+advanced_monitoring:
+  helm: true
+  create_rbac: true
+  prometheus:
+    persistentVolume:
+      enable: false
+  pushgateway:
+    persistentVolume:
+      enable: false
+  alertmanager:
+    persistentVolume:
+      enable: false
+  grafana:
+    persistentVolume:
+      enable: false
+
+# If deploy_monitoring_using_helm is true the advenced_monitoring will not be processed
 # Advanced Monitoring (Prometheuse, Grafana)
 #   echo -n Passw0rd | base64 => UGFzc3cwcmQ=
 #   echo -n admin | base64  => YWRtaW4=
-#
 advanced_monitoring:
   defaults:
     namespace: cluster-monitoring

@@ -1,0 +1,31 @@
+---
+
+# kubectl get secret --namespace <my-grafana-namespace> grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+- name: Create namespace cluster-monitoring
+  shell: |
+    kubectl create namespace cluster-monitoring
+
+- pause:
+    seconds: 10
+
+- name: install prometheus stack
+  shell: |
+    helm install prometheus stable/prometheus -n cluster-monitoring \
+         --set rbac.create={{ advanced_monitoring.create_rbac }} \
+         --set server.persistentVolume.enabled={{ advanced_monitoring.prometheus.persistentVolume.enable }} \
+         --set pushgateway.persistentVolume.enabled={{ advanced_monitoring.pushgateway.persistentVolume.enable }} \
+         --set alertmanager.persistentVolume.enabled={{ advanced_monitoring.alertmanager.persistentVolume.enable }}
+
+- name: install grafana
+  shell: |
+    helm install grafana stable/grafana -n cluster-monitoring --set rbac.create={{ advanced_monitoring.create_rbac }} \
+         --set persistence.enabled={{ advanced_monitoring.grafana.persistentVolume.enable }}
+
+- name: Deploy node-exporter in master too
+  shell: |
+    kubectl patch daemonset prometheus-node-exporter -n cluster-monitoring --type='json' \
+            -p='[{"op": "add", "path": "/spec/template/spec/tolerations", "value": [{"key": "node-role.kubernetes.io/master", "effect": "NoSchedule" }]}]'
+        
+
+

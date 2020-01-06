@@ -1,34 +1,16 @@
 ---
 
-- name: Generate kubernetes config file for grafana and prometheus
-  template:
-    src: "{{ item }}.j2"
-    dest: "/var/tmp/mon/{{ item }}"
+- name: Deploy monitoring using HELM
+  include: monitoring_helm_deploy.yml
   ignore_errors: yes
-  with_items:
-    - clusterRole.yaml
-    - grafana_config-map.yaml
-    - grafana_dashboard_config-map.yaml
-    - grafana_namespace.yaml
-    - grafana_secret.yaml
-    - grafana_service-account.yaml
-    - grafana_service.yaml
-    - grafana_statefulset.yaml
-    - node-exporter-daemonset.yaml
-    - prom_config-map.yaml
-    - prometheus-deployment.yaml
-    - prometheus_namespace.yaml
-    - kube-state_serviceaccount.yaml
-    - kube-state_metrics-service.yaml
-    - kube-state-metrics_deployment.yaml
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+  when: 
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+    - deploy_monitoring_using_helm|default(false) == true
 
-- name: Add grafana dashboards
-  blockinfile:
-    path: "/var/tmp/mon/grafana_dashboard_config-map.yaml"
-    insertafter: "data:"
-    block: |
-     {{lookup('file', 'files/grafana_dashboards') }}
+- name: Deploy advanced Monitoring
+  include: monitoring_advanced_deploy.yml
   ignore_errors: yes
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+  when:
+    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
+    - deploy_monitoring_using_helm|default(false) == false
 
