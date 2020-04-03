@@ -1,26 +1,26 @@
 ---
-
-- name: Add CRI-O repositories for version 1.11 1.13 1.14 and 1.15
-  yum_repository:
-    name: "{{ item.name }}"
-    file: crio
-    description: "{{ item.description }}"
-    baseurl: "{{ item.baseurl }}" 
-    enabled: yes
-    gpgcheck: no
-  with_items:
-    - name: CRI-O-115
-      description: CRI-O-115
-      baseurl: https://cbs.centos.org/repos/paas7-crio-115-candidate/x86_64/os/
-    - name: CRI-O-111
-      description: CRI-O-111
-      baseurl: https://cbs.centos.org/repos/paas7-crio-311-candidate/x86_64/os/
-    - name: CRI-O-114
-      description: CRI-O-114
-      baseurl: https://cbs.centos.org/repos/paas7-crio-114-candidate/x86_64/os/
-    - name: CRI-O-113
-      description: CRI-O-113
-      baseurl: https://cbs.centos.org/repos/paas7-crio-113-candidate/x86_64/os
+# the repositories was disabled :(
+#- name: Add CRI-O repositories for version 1.11 1.13 1.14 and 1.15
+#  yum_repository:
+#    name: "{{ item.name }}"
+#    file: crio
+#    description: "{{ item.description }}"
+#    baseurl: "{{ item.baseurl }}" 
+#    enabled: yes
+#    gpgcheck: no
+#  with_items:
+#    - name: CRI-O-115
+#      description: CRI-O-115
+#      baseurl: https://cbs.centos.org/repos/paas7-crio-115-candidate/x86_64/os/
+#    - name: CRI-O-111
+#      description: CRI-O-111
+#      baseurl: https://cbs.centos.org/repos/paas7-crio-311-candidate/x86_64/os/
+#    - name: CRI-O-114
+#      description: CRI-O-114
+#      baseurl: https://cbs.centos.org/repos/paas7-crio-114-candidate/x86_64/os/
+#    - name: CRI-O-113
+#      description: CRI-O-113
+#      baseurl: https://cbs.centos.org/repos/paas7-crio-113-candidate/x86_64/os
 
 - name: Update cache
   yum:
@@ -64,16 +64,27 @@
         state: absent
   when: build_cni_from_source == true
 
-
-- name: install CRI-O
+- name: Install CRI-O 1.15.1
   yum:
-    name:
-      - cri-o
-      - cri-tools
-    disable_excludes: all
-    update_cache: yes
+    name: https://cbs.centos.org/kojifiles/packages/cri-o/1.15.1/2.el7/x86_64/cri-o-1.15.1-2.el7.x86_64.rpm
     disable_gpg_check: yes
     state: present
+    
+- name: Install CRI-Tool
+  yum:
+    name: http://rpmfind.net/linux/opensuse/tumbleweed/repo/oss/x86_64/cri-tools-1.17.0-1.1.x86_64.rpm
+    disable_gpg_check: yes
+    state: present
+#
+#- name: install CRI-O
+#  yum:
+#    name:
+#      - cri-o
+#      - cri-tools
+#    disable_excludes: all
+#    update_cache: yes
+#    disable_gpg_check: yes
+#    state: present
 
 - name: Create crio directories
   file:
