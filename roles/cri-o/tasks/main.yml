@@ -22,9 +22,9 @@
 #      description: CRI-O-113
 #      baseurl: https://cbs.centos.org/repos/paas7-crio-113-candidate/x86_64/os
 
-- name: Update cache
-  yum:
-    update_cache: yes
+#- name: Update cache
+#  yum:
+#   update_cache: yes
 
 #- name: Add Centos-extras-x86_64 repository used for containernetworking-plugins
 #  yum_repository:
