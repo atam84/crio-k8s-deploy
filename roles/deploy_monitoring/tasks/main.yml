@@ -2,19 +2,20 @@
 
 - name: Install metrics-server using GIT
   block: 
-    - name: Create checkout directory
-      file:
-        path: /var/tmp/metrics-server
-        state: directory
-
-    - name: Get metrics-server
-      git:
-        repo: "{{ metrics_server.url }}"
-        dest: /var/tmp/metrics-server
+    #- name: Create checkout directory
+    #  file:
+    #    path: /var/tmp/metrics-server
+    #    state: directory
+    #
+    #- name: Get metrics-server
+    #  git:
+    #    repo: "{{ metrics_server.url }}"
+    #    dest: /var/tmp/metrics-server
 
     - name: kubectl apply
       shell: |
-        kubectl apply -f /var/tmp/metrics-server/{{ metrics_server.plugin_dir }}
+        #kubectl apply -f /var/tmp/metrics-server/{{ metrics_server.plugin_dir }}
+        kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
       register: deploy_metrics_server
       ignore_errors: true
 
