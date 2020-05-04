@@ -1,0 +1,12 @@
+---
+
+- block:
+    - name: Reboot servers
+      reboot:
+        msg: "Kubernetes cluster was destroyed now we go to reboot that servers."
+
+    - name: waiting the servers to become reachable
+      wait_for_connection:
+        connect_timeout: 20
+        delay: 5
+  when: reboot_servers_when_cluster_is_destroyed == true 

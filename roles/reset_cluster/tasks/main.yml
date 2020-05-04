@@ -1,0 +1,25 @@
+---
+
+- name: Destroy k8s cluster
+  shell: |
+    kubeadm reset --force
+  register: reset_k8s
+
+- name: Remove images when cluster was destroyed
+  shell: |
+    crictl rmi $(crictl images -q)
+  ignore_errors: true
+  when: remove_images_when_cluster_is_destroyed == true
+
+- name: Stop CRIO
+  systemd:
+    name: kubelet
+    state: stopped
+  ignore_errors: yes
+
+- name: Stop CRIO
+  systemd:
+    name: crio
+    state: stopped
+  ignore_errors: yes
+

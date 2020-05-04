@@ -1,5 +1,5 @@
 
-[init] Using Kubernetes version: v1.17.0
+[init] Using Kubernetes version: v1.18.2
 [preflight] Running pre-flight checks
 [preflight] Pulling images required for setting up a Kubernetes cluster
 [preflight] This might take a minute or two, depending on the speed of your internet connection
@@ -33,16 +33,18 @@
 [control-plane] Creating static Pod manifest for "kube-scheduler"
 [etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
 [wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
-[apiclient] All control plane components are healthy after 28.170535 seconds
+[kubelet-check] Initial timeout of 40s passed.
+[apiclient] All control plane components are healthy after 40.530966 seconds
 [upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
-[kubelet] Creating a ConfigMap "kubelet-config-1.17" in namespace kube-system with the configuration for the kubelets in the cluster
+[kubelet] Creating a ConfigMap "kubelet-config-1.18" in namespace kube-system with the configuration for the kubelets in the cluster
 [upload-certs] Storing the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
 [upload-certs] Using certificate key:
-e2b57d0cb1863088e8cf70efb227af7d9ef474a040092babe8d52064f2db904e
+3420789dbd3c0c32f7c9d487e839ffb34b9bc944efb2ed27ff2816ba07a6b359
 [mark-control-plane] Marking the node k8s-master01.cluster.local as control-plane by adding the label "node-role.kubernetes.io/master=''"
 [mark-control-plane] Marking the node k8s-master01.cluster.local as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
-[bootstrap-token] Using token: 9q413o.toirdvqhdlvi9qnl
+[bootstrap-token] Using token: gx5krf.unflxbxwz3lkkw17
 [bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes
 [bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
 [bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
 [bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
@@ -65,9 +67,9 @@ Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
 
 You can now join any number of the control-plane node running the following command on each as root:
 
-  kubeadm join 192.168.122.41:6443 --token 9q413o.toirdvqhdlvi9qnl \
-    --discovery-token-ca-cert-hash sha256:f6aacb8b3a309b09468b249d29981418e47e927adce78b07a5d3e61c85b5950b \
-    --control-plane --certificate-key e2b57d0cb1863088e8cf70efb227af7d9ef474a040092babe8d52064f2db904e
+  kubeadm join 192.168.122.41:6443 --token gx5krf.unflxbxwz3lkkw17 \
+    --discovery-token-ca-cert-hash sha256:c3dbde6301a114d67c63654c27ca870929438fe245cb3a006ad93e6ac83fd58d \
+    --control-plane --certificate-key 3420789dbd3c0c32f7c9d487e839ffb34b9bc944efb2ed27ff2816ba07a6b359
 
 Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
 As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
@@ -75,6 +77,6 @@ As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you c
 
 Then you can join any number of worker nodes by running the following on each as root:
 
-kubeadm join 192.168.122.41:6443 --token 9q413o.toirdvqhdlvi9qnl \
-    --discovery-token-ca-cert-hash sha256:f6aacb8b3a309b09468b249d29981418e47e927adce78b07a5d3e61c85b5950b 
+kubeadm join 192.168.122.41:6443 --token gx5krf.unflxbxwz3lkkw17 \
+    --discovery-token-ca-cert-hash sha256:c3dbde6301a114d67c63654c27ca870929438fe245cb3a006ad93e6ac83fd58d 
 

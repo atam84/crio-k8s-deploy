@@ -3,4 +3,6 @@
 - hosts: all
   become: yes
   roles:
-    - destroy_cluster
+    - reset_cluster
+    - remove_packages
+    - reboot_servers
