@@ -2,9 +2,9 @@
 
 reboot_servers_when_cluster_is_destroyed: true
 remove_images_when_cluster_is_destroyed: true
-generate_hostname_and_create_etc_hosts: true
+generate_hostname_and_create_etc_hosts: false
 add_logrotate_system_messages: true
-keep_firewalld_enabled: true
+keep_firewalld_enabled: false
 upgrade_packages: false
 disable_ipv6: true
 sshd_use_ipv4_only: true
@@ -40,6 +40,7 @@ build_cni_from_source: false
 cni_git_url: "https://github.com/containernetworking/plugins"
 cni_git_version: "v0.8.1"
 cni_build_temp_folder: "~/git"
+
 # CRI-O configuration
 crio:
   root: "/var/lib/containers/storage"
@@ -148,13 +149,13 @@ kubernetes_dashboard:
 
 # You need to setup some PV and there PVC when the cluster is ployed ? can be useful if you need some persistence quickly
 cluster_volumes:
-  nfs: true
+  nfs: false
   local: true
 
 # These informations are used to made your NFS storage and to make the PV and PVC automatically
 nfs_server:
   nfs_server_addr: 192.168.122.52
-  setup: true
+  setup: false
   nfs_root_dir: /srv/nfs-volumes
   resticted_network: 192.168.122.0/24
   defaults:
@@ -281,6 +282,4 @@ admin_cluster:
   - options:
       uptade: etc_hosts
       update_inventory: true
-
-
 

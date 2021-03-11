@@ -76,6 +76,7 @@
   yum:
     name: /var/tmp/containernetworking-plugins-0.7.5-1.el7.x86_64.rpm
     state: present
+    disable_gpg_check: yes
   when: build_cni_from_source == false
 
 - name: install CRI-O
@@ -84,6 +85,7 @@
       - /var/tmp/cri-o-1.15.3-1.el7.x86_64.rpm
       - /var/tmp/cri-tools-1.13.0-1.rhaos4.1.gitc06001f.el7.x86_64.rpm
     state: present
+    disable_gpg_check: yes
 
 - name: Create crio directories
   file:

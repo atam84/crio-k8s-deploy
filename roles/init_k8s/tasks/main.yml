@@ -60,7 +60,8 @@
   delegate_to: localhost
   lineinfile:
     path: "./files/initiator-server.txt"
-    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    #line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    line: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
     create: yes
     state: present
   when: hostvars[inventory_hostname]['cluster_initiator'] == "true"

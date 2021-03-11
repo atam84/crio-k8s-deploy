@@ -1,24 +1,24 @@
 ---
 
-- name: Cleanup
-  run_once: true
-  delegate_to: localhost
-  file:
-    path: "./files/{{ item }}"
-    state: absent
-  with_items:
-    - k8s_join.txt
-    - initiator-server.txt
-
-- name: Find Initiator server
-  run_once: true
-  delegate_to: localhost
-  lineinfile:
-    path: "./files/initiator-server.txt"
-    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-    create: yes
-    state: present
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+#- name: Cleanup
+#  run_once: true
+#  delegate_to: localhost
+#  file:
+#    path: "./files/{{ item }}"
+#    state: absent
+#  with_items:
+#    - k8s_join.txt
+#    - initiator-server.txt
+#
+#- name: Find Initiator server
+#  run_once: true
+#  delegate_to: localhost
+#  lineinfile:
+#    path: "./files/initiator-server.txt"
+#    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+#    create: yes
+#    state: present
+#  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
 
 
 - set_fact:
