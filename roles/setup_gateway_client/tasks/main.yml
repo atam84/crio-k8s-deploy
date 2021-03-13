@@ -1,170 +1,23 @@
 ---
 
-- name: Add kubernetes repository
-  yum_repository:
-    name: Kubernetes
-    file: kubernetes
-    description: Kubernetes YUM repo
-    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-    enabled: yes
-    gpgcheck: yes
-    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-
-
-- name: Install kubeadm kubelet and kubectl
-  yum:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    disable_excludes: all
-    update_cache: yes
-    state: present
-    
-
-- name: Create kubelet configuration file 20-cri.conf file
-  blockinfile:
-    path: /usr/lib/systemd/system/kubelet.service.d/20-cri.conf
-    marker: ""
-    create: yes
-    block: |
-      [Service]
-      Environment="KUBELET_EXTRA_ARGS=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock"
-
-
-- name: systemd daemon reload
-  systemd:
-    daemon_reload: yes
-
-- name: Enable kubelet.service
-  systemd:
-    name: kubelet.service
-    enabled: yes
-    state: stopped
-
-
-- name: Cleanup
-  run_once: true
-  delegate_to: localhost
-  file:
-    path: "./files/{{ item }}"
-    state: absent
-  with_items:
-    - initiator-server.txt
-    - k8s_join.txt
-    - kubeadm_init.txt
-
-
-- name: Find Initiator server
-  run_once: true
-  delegate_to: localhost
+- name: Configure network interfaces to use gateway
   lineinfile:
-    path: "./files/initiator-server.txt"
-    #line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-    line: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
-    create: yes
-    state: present
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ item['interface_name'] }}
+    regexp: '^GATEWAY='
+    line: 'GATEWAY={{ item['gateway_ip'] }}'
+  with_items: network_interfaces
 
+- name: (DNS1) Configure dns for the interface
+  lineinfile:
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ item['interface_name'] }}
+    regexp: '^DNS1='
+    line: 'DNS1={{ item['dns1'] }}'
+  with_items: network_interfaces
+    
+- name: (DNS2) Configure dns for the interface
+  lineinfile:
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ item['interface_name'] }}
+    regexp: '^DNS2='
+    line: 'DNS2={{ item['dns1'] }}'
+  with_items: network_interfaces
 
-- set_fact:
-    initiator: "{{ lookup('file', './files/initiator-server.txt') }}"
-
-
-- debug:
-    msg: "Initiator server selected: {{ initiator }}"
-
-- name: (FLANNEL) Initialize the cluster
-  shell: |
-    kubeadm init --cri-socket="unix:///var/run/crio/crio.sock" \
-                 --kubernetes-version $(kubeadm version -o short) \
-                 --apiserver-advertise-address={{ initiator }} \
-                 --upload-certs \
-                 --control-plane-endpoint {{ initiator }} \
-                 --pod-network-cidr 10.244.0.0/16 
-  register: init_cluster
-  delegate_facts: true
-  ignore_errors: true
-  run_once: true
-  when:
-    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
-    - pod_network == "flannel"
-
-- name: Initialize the cluster
-  shell: |
-    kubeadm init --cri-socket="unix:///var/run/crio/crio.sock" \
-                  --kubernetes-version $(kubeadm version -o short) \
-                  --apiserver-advertise-address={{ initiator }} \
-                  --upload-certs \
-                  --control-plane-endpoint {{ initiator }}
-  register: init_cluster
-  delegate_facts: true
-  ignore_errors: true
-  run_once: true
-  when:
-    - hostvars[inventory_hostname]['cluster_initiator'] == "true"
-    - pod_network != "flannel"
-
-- name: Save kubeadm init output
-  run_once: true
-  delegate_to: localhost
-  ignore_errors: true
-  blockinfile:
-    path: "./files/kubeadm_init.txt"
-    marker: ""
-    create: yes
-    block: |
-      {{ init_cluster.stdout }}
-
-- block:
-    - name: Set control
-      shell: |
-        mkdir -p $HOME/.kube
-        cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
-        chown $(id -u):$(id -g) $HOME/.kube/config
-      delegate_facts: true
-      ignore_errors: true
-      run_once: true
-
-    # YES there is a way to made this smarter
-    #
-    - name: Setup WEAVE
-      shell: |
-        kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-      delegate_facts: true
-      ignore_errors: true
-      run_once: true
-      when: pod_network == "weave"
-
-    - name: Setup FLANNEL
-      shell: |
-        kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-      delegate_facts: true
-      ignore_errors: true
-      run_once: true
-      when: pod_network == "flannel"
-
-    - name: Setup CALICO
-      shell: |
-        kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml
-      delegate_facts: true
-      ignore_errors: true
-      run_once: true
-      when: pod_network == "calico"
-
-    - name: Setup CANAL
-      shell: |
-        kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/canal.yaml
-      delegate_facts: true
-      ignore_errors: true
-      run_once: true
-      when: pod_network == "canal"
-  when: hostvars[inventory_hostname]['cluster_initiator'] == "true"
-#
-# kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml
-# kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/canal.yaml
-# For flannel to work correctly, you must pass --pod-network-cidr=10.244.0.0/16 to kubeadm init.
-# kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
-# kubectl apply -f https://raw.githubusercontent.com/romana/romana/master/containerize/specs/romana-kubeadm.yml
-# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-#
