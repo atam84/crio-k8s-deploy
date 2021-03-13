@@ -7,4 +7,4 @@
     #- deploy_monitoring
     #- deploy_dashboard
     #- add_pv_pvc
-    - deploy_advanced_monitoring
+    - setup_gateway_client
