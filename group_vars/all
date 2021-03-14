@@ -106,7 +106,7 @@ pod_network_urls:
   flannel: "https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
   weave: "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
   calico: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
-  canal: "https://docs.projectcalico.org/v3.18/manifests/canal.yaml"
+  canal: "https://docs.projectcalico.org/v3.10/manifests/canal.yaml"
 
 # Helm should be installed only in the masters nodes you can add more repos or use your inernal repo and remove the others
 # https://github.com/helm/helm/releases
@@ -213,21 +213,21 @@ local_storage:
 deploy_monitoring_using_helm: true
 deploy_monitoring_using_helm_use_pv: false
 
-#advanced_monitoring:
-#  helm: true
-#  create_rbac: true
-#  prometheus:
-#    persistentVolume:
-#      enable: false
-#  pushgateway:
-#    persistentVolume:
-#      enable: false
-#  alertmanager:
-#    persistentVolume:
-#      enable: false
-#  grafana:
-#    persistentVolume:
-#      enable: false
+advanced_monitoring:
+  helm: true
+  create_rbac: true
+  prometheus:
+    persistentVolume:
+      enable: false
+  pushgateway:
+    persistentVolume:
+      enable: false
+  alertmanager:
+    persistentVolume:
+      enable: false
+  grafana:
+    persistentVolume:
+      enable: false
 
 # If deploy_monitoring_using_helm is true the advenced_monitoring will not be processed
 # Advanced Monitoring (Prometheuse, Grafana)
@@ -283,11 +283,16 @@ admin_cluster:
       uptade: etc_hosts
       update_inventory: true
 
-
 network_interfaces:
   - interface_name: eth1
     gateway_ip: 192.168.70.150
     dns1: 8.8.8.8
     dns2: 8.8.4.4
 
-
+gateway_setup:
+  - internal_network: 192.168.70.0
+    mask: 24
+    ip_source: 10.0.2.15
+    destination: "! 192.168.70.0/24"
+    out_interface: eth0
+    local_network_if: eth1
