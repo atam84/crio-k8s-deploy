@@ -3,21 +3,21 @@
 - name: Configure network interfaces to use gateway
   lineinfile:
     path: /etc/sysconfig/network-scripts/ifcfg-{{ item['interface_name'] }}
-    regexp: '^GATEWAY='
-    line: 'GATEWAY={{ item['gateway_ip'] }}'
-  with_items: network_interfaces
+    regexp: "^GATEWAY="
+    line: "GATEWAY={{ item['gateway_ip'] }}"
+  with_items: "{{ network_interfaces }}"
 
 - name: (DNS1) Configure dns for the interface
   lineinfile:
     path: /etc/sysconfig/network-scripts/ifcfg-{{ item['interface_name'] }}
-    regexp: '^DNS1='
-    line: 'DNS1={{ item['dns1'] }}'
-  with_items: network_interfaces
+    regexp: "^DNS1="
+    line: "DNS1={{ item['dns1'] }}"
+  with_items: "{{ network_interfaces }}"
     
 - name: (DNS2) Configure dns for the interface
   lineinfile:
     path: /etc/sysconfig/network-scripts/ifcfg-{{ item['interface_name'] }}
-    regexp: '^DNS2='
-    line: 'DNS2={{ item['dns1'] }}'
-  with_items: network_interfaces
+    regexp: "^DNS2="
+    line: "DNS2={{ item['dns1'] }}"
+  with_items: "{{ network_interfaces }}"
 

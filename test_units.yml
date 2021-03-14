@@ -7,4 +7,5 @@
     #- deploy_monitoring
     #- deploy_dashboard
     #- add_pv_pvc
-    - setup_gateway_client
+    - reboot_servers
+    #- setup_gateway_client
