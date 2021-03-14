@@ -2,7 +2,8 @@
 
 - name: add route to the network
   shell: |
-    ip route add 192.168.70.0/24 dev eth1
+    ip route add {{ gateway_setup["internal_network"] }}/{{ gateway_setup["mask"] }} dev {{ gateway_setup["local_network_if"] }}
+  ignore_errors: true
 
 - name: set net.ipv4.ip_forward=1
   sysctl:
@@ -13,26 +14,22 @@
     reload: yes
 
 
-- name: Flush all chain in iptable
-  iptables:
-    flush: yes
-#sudo iptables -F
-
 - name: Flush all chain in table Nat
   iptables:
+    flush:
     table: nat
+  ignore_errors: true
 #sudo iptables -t nat -F
 
 - name: Setup nat POSTROUTING
   iptables:
     table: nat
     chain: POSTROUTING
-    to_source: 10.0.2.15
-    destination: "! 192.168.70.0/24"
-    out_interface: eth0
+    to_source: "{{ gateway_setup["ip_source"] }}"
+    destination: "! {{ gateway_setup["destination"] }}"
+    out_interface: "{{ gateway_setup["out_interface"] }}""
     jump: SNAT
-  become: yes
-
+    
 #sudo iptables -t nat -A POSTROUTING ! -d 192.168.70.0/24 -o eth0 -j SNAT --to-source 10.0.2.15
 
 
