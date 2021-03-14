@@ -25,11 +25,11 @@
   iptables:
     table: nat
     chain: POSTROUTING
-    to_source: "{{ gateway_setup["ip_source"] }}"
-    destination: "! {{ gateway_setup["destination"] }}"
-    out_interface: "{{ gateway_setup["out_interface"] }}""
+    to_source: "{{ gateway_setup['ip_source'] }}"
+    destination: "! {{ gateway_setup['destination'] }}"
+    out_interface: "{{ gateway_setup['out_interface'] }}""
     jump: SNAT
-    
+
 #sudo iptables -t nat -A POSTROUTING ! -d 192.168.70.0/24 -o eth0 -j SNAT --to-source 10.0.2.15
 
 
